@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
@@ -215,7 +216,7 @@ legend{font-size:13px;color:var(--muted);font-weight:500;padding:0 4px}
 .bar{padding:20px 32px 16px}
 .ms{position:relative;margin-bottom:12px}
 .ms[hidden]{display:none!important}
-.fld[hidden]{display:none!important}
+.fld[hidden],.row2[hidden],.chk[hidden]{display:none!important}
 .grid-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start}
 @media (max-width:640px){.grid-ms{grid-template-columns:1fr}}
 .ms-l{font-size:13px;color:var(--muted);font-weight:500}
@@ -514,6 +515,8 @@ function syncDims(){const act=k=>EST[k].filter(x=>x.activo).map(x=>x.nombre),put
 function setEstructura(e){Object.keys(EST).forEach(k=>{EST[k]=JSON.parse(JSON.stringify(e[k]||[])).map(x=>({codigoSap:'',desc:'',activo:true,...x}))});syncDims()}
 setEstructura(seedEstructura());
 const CLASES_ZONA=['Casco','Periferia'];
+const SEGMENTOS=['Nuevo','Recurrente'];
+const segCli=c=>{if(!c?.alta)return 'Recurrente';const d=(Date.parse(hoy())-Date.parse(c.alta))/864e5;return d<=CONFIG.diasNuevo?'Nuevo':'Recurrente'};
 const claseZona=z=>EST.zonas.find(x=>x.nombre===z)?.clase||null;
 const MAE={orgs:{t:'Organización de ventas',pl:'Organizaciones de ventas',f:1,cli:'org',hijo:'canales'},canales:{t:'Canal de distribución',pl:'Canales de distribución',cli:'canal',padre:'orgs'},
   sedes:{t:'Oficina de venta',pl:'Oficinas de venta',f:1,cli:'sede',hijo:'zonas'},zonas:{t:'Zona',pl:'Zonas',f:1,cli:'zona',padre:'sedes',hijo:'modulos'},modulos:{t:'Módulo',pl:'Módulos',cli:'modulo',padre:'zonas'}};
@@ -536,23 +539,23 @@ function seedProductos(){const todos=['Vendedor (app)','WhatsApp','Facebook','In
   {sku:'HB-GJ',nombre:'Huevo blanco grande',tipo:'Huevo',categoria:'Blanco',attrs:{calibre:'XL',envase:'Jaba',linea:'Económica',marca:'La Calera',agrupador:'Granel grande'},unidad:'jaba',contenido:'',huevos:180,mideJaba:true,pesoKg:11.8,pesoTipo:'certificado',codigoSap:'100003',igv:'Por confirmar',activo:true,canales:[...todos],alta:'2026-09-01'},
   {sku:'HCO-J',nombre:'Huevo de corral',tipo:'Huevo',categoria:'Pardo',attrs:{calibre:'L',envase:'Jaba',linea:'Premium',marca:'La Calera',agrupador:'Granel corral'},unidad:'jaba',contenido:'',huevos:180,mideJaba:true,pesoKg:11,codigoSap:'100011',igv:'Por confirmar',activo:true,canales:[...todos],alta:'2026-09-01'},
   {sku:'HP-B30',nombre:'Huevo pardo bandeja x30',tipo:'Huevo',categoria:'Pardo',attrs:{calibre:'L',envase:'Bandeja',linea:'Premium',marca:'La Calera'},unidad:'bandeja',contenido:'',huevos:30,mideJaba:true,pesoKg:1.9,codigoSap:'100010',igv:'Por confirmar',activo:true,canales:[...todos],alta:'2026-09-01'},
-  {sku:'GAL-U',nombre:'Gallina en pie',tipo:'Gallina',categoria:'En pie',attrs:{linea:'Económica',marca:'La Calera'},unidad:'unidad',contenido:'1 ave',huevos:null,mideJaba:false,pesoKg:2.6,codigoSap:'200001',igv:'Por confirmar',activo:true,canales:[...todos],alta:'2026-09-01'},
+  {sku:'GAL-U',nombre:'Gallina en pie',tipo:'Gallina',categoria:'En pie',attrs:{linea:'Económica',marca:'La Calera'},unidad:'unidad',contenido:'1 ave',huevos:null,mideJaba:false,ventaPeso:true,pesoKg:2.6,codigoSap:'200001',igv:'Por confirmar',activo:true,canales:[...todos],alta:'2026-09-01'},
   {sku:'HC-P24',nombre:'Huevo de codorniz x24',tipo:'Huevo',categoria:'Codorniz',attrs:{envase:'Paquete',linea:'Premium',marca:'La Calera'},unidad:'paquete',contenido:'',huevos:24,mideJaba:false,pesoKg:0.3,codigoSap:'100020',igv:'Por confirmar',activo:false,canales:['Vendedor (app)'],alta:'2026-09-15'}]}
-const CONFIG={huevosPorJaba:180,kgJaba:11};
+const CONFIG={huevosPorJaba:180,kgJaba:11,diasNuevo:90};
 function setProductos(arr){PRODUCTOS.splice(0,PRODUCTOS.length,...arr)}
-setProductos(seedProductos());
+setProductos([]);
 const CLIENTES=[];
 function seedClientes(){return [
   {id:'C1',nombre:'Comercial Caquetá SAC',ruc:'20500000001',sede:'Lima',org:'Org. Tradicional',canal:'Mayorista',zona:'Lima Centro',modulo:'M1',pago:'Crédito 7 días'},
-  {id:'C2',nombre:'Bodega Doña Rosa',ruc:'10400000002',sede:'Lima',org:'Org. Tradicional',canal:'Horizontal',zona:'Lima Este',modulo:'M3',pago:'Contado'},
+  {id:'C2',alta:(()=>{const d=new Date();d.setDate(d.getDate()-20);return d.toISOString().slice(0,10)})(),nombre:'Bodega Doña Rosa',ruc:'10400000002',sede:'Lima',org:'Org. Tradicional',canal:'Horizontal',zona:'Lima Este',modulo:'M3',pago:'Contado'},
   {id:'C3',nombre:'Puesto 14, Mercado Central',ruc:'10400000003',sede:'Lima',org:'Org. Tradicional',canal:'Mercados',zona:'Lima Centro',modulo:'M2',pago:'Contado'},
   {id:'C4',nombre:'Supermercados Peruanos (SPSA)',ruc:'',sede:'Lima',org:'Org. Moderno',canal:'Autoservicios',zona:'Lima Sur',modulo:'M4',pago:'Crédito 30 días'},
   {id:'C6',nombre:'Grupo Hotelero Andino (cuenta clave)',ruc:'20500000006',sede:'Lima',org:'Org. Moderno',canal:'Cuentas Claves',zona:'Lima Centro',modulo:'M1',pago:'Crédito 30 días'},
   {id:'C5',nombre:'Distribuidora del Sur EIRL',ruc:'20500000005',sede:'Arequipa',org:'Org. Tradicional',canal:'Mayorista',zona:'Arequipa Centro',modulo:'A1',pago:'Crédito 7 días'}]}
 function setClientes(a){CLIENTES.splice(0,CLIENTES.length,...JSON.parse(JSON.stringify(a)))}
-setClientes(seedClientes());
+setClientes([]);
 const PAGOS=['Contado','Crédito 7 días','Crédito 15 días','Crédito 30 días'];
-const DIMS=[['orgs','org','Organización de ventas',()=>ORGS],['sedes','sede','Oficina de venta',()=>SEDES],['canales','canal','Canal de distribución',()=>CANALES],['clases','clase','Tipo de zona',()=>CLASES_ZONA],['zonas','zona','Zona',()=>ZONAS],['modulos','modulo','Módulo',()=>MODULOS]];
+const DIMS=[['orgs','org','Organización de ventas',()=>ORGS],['sedes','sede','Oficina de venta',()=>SEDES],['canales','canal','Canal de distribución',()=>CANALES],['clases','clase','Tipo de zona',()=>CLASES_ZONA],['zonas','zona','Zona',()=>ZONAS],['modulos','modulo','Módulo',()=>MODULOS],['segmentos','segmento','Tipo de cliente (nuevo o recurrente)',()=>SEGMENTOS]];
 const CAPAS=[
   {id:1,nombre:'Precio base',modo:'reemplaza'},{id:2,nombre:'Ajustes de base',modo:'acumula'},{id:3,nombre:'Precio pactado',modo:'reemplaza'},
   {id:4,nombre:'Ajustes por línea',modo:'acumula'},{id:5,nombre:'Promociones del pedido',modo:'acumula'},
@@ -603,17 +606,18 @@ function estadoVersion(r,v){const vig=versionVigente(r,hoy());if(v===vig)return 
 /* ---- índice de precios: vive dentro de cada lista y puede variar varias veces al día ---- */
 const TIPOS_IDX=['Huevo','Gallina'];const FACTORES=[];
 const ahoraLocal=()=>{const d=new Date();return hoy()+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
-function indiceLista(r,tipo,momento){const xs=(r?.indice?.[tipo]||[]).filter(x=>x.t<=momento).sort((a,b)=>a.t<b.t?-1:1);return xs.length?xs[xs.length-1]:null}
+function movsLista(r,tipo,momento){const ver=r?versionVigente(r,momento):null,ini=ver?tVer(ver.desde):'';return (r?.indice?.[tipo]||[]).filter(x=>x.t<=momento&&x.t>=ini&&x.d!=null).sort((a,b)=>a.t<b.t?-1:1)}
+function indiceLista(r,tipo,momento){const xs=movsLista(r,tipo,momento);if(!xs.length)return null;const u=xs[xs.length-1];return {t:u.t,v:xs.reduce((s2,x)=>s2+x.d,0),rol:u.rol,com:u.com,n:xs.length}}
+const fPts=v=>`${v>0?'+':v<0?'−':''}${fq(Math.abs(v))} pts`;
+const varSku=(r,p,m)=>{const a=indiceLista(r,p.tipo,m);return a?r2(a.v/100*factorDe(p).v):0};
 const snapIndiceLista=r=>Object.fromEntries(TIPOS_IDX.map(t=>[t,indiceLista(r,t,ahoraLocal())?.v??null]));
 function listaPara(cliente,fecha){return state.reglas.filter(r=>r.tipo==='lista'&&r.activa&&elegible(r,{cliente,fecha,canalPedido:null})).sort((a,b)=>(a.prioridad||0)-(b.prioridad||0))[0]||null}
 function seedFactores(){return [{id:'F1',grupo:{categorias:['Huevo/Pardo'],attrs:{envase:['Bandeja']}},factor:1,nota:'La bandeja de pardo solo varía unos céntimos'}]}
 function setFactores(a){FACTORES.splice(0,FACTORES.length,...JSON.parse(JSON.stringify(a)))}
-setFactores(seedFactores());
+setFactores([]);
+const porPeso=p=>!!(p&&p.ventaPeso);const uV=p=>porPeso(p)?'kg':p?.unidad;const qF=l=>porPeso(l.producto)?l.cant*(l.producto.pesoKg||0):l.cant;
 const baseVar=p=>p.baseVar||(p.factor!=null?'manual':p.pesoTipo==='certificado'?'peso':(p.tipo==='Huevo'&&p.huevos>0?'huevos':'peso'));
-function factorDe(p){const f=FACTORES.find(x=>matchGrupo(p,x.grupo));if(f)return {v:f.factor,origen:'agrupador: '+descGrupo(f.grupo)};
-  const b=baseVar(p);if(b==='manual'&&p.factor!=null)return {v:p.factor,origen:'factor manual'};
-  if(b==='huevos'&&p.huevos>0){const j=p.huevos/CONFIG.huevosPorJaba;return {v:Math.round(j*CONFIG.kgJaba*1000)/1000,origen:`por huevos: ${fq(j)} jaba(s) × ${CONFIG.kgJaba} kg de referencia`}}
-  return {v:p.pesoKg??0,origen:p.pesoTipo==='certificado'?'peso certificado':'peso referencial'}}
+function factorDe(p){const f=FACTORES.find(x=>matchGrupo(p,x.grupo));if(f)return {v:f.factor,origen:'agrupador: '+descGrupo(f.grupo)};return p?.factor!=null?{v:p.factor,origen:'factor del producto'}:{v:1,origen:'factor por defecto'}}
 const solapa=(a=[],b=[])=>(!a.length&&!b.length)||(!a.length||!b.length)||a.some(x=>b.includes(x));
 function bandaLista(r,sku){if(!r||r.origen==='SAP')return null;const o=r.bandaSku?.[sku]||{},ab=o.abajo??r.banda?.abajo,ar=o.arriba??r.banda?.arriba;return ab==null&&ar==null?null:{abajo:ab??null,arriba:ar??null,propia:!!r.bandaSku?.[sku]}}
 const pts=n=>n==null?'—':`${n} pts`;
@@ -624,28 +628,22 @@ const TIPOS={};
 const desc=p=>{const u=p.unidad||(p.pct!=null&&p.valor==null?'pct':'pts');const v=num(p.valor??p.pct)||0;return {u,v,txt:u==='pct'?`−${v}%`:`−${fq(v)} pts`}};
 const motor={
   registrarTipo(def){TIPOS[def.id]=def},
-  eff(l){return l.cant?(l.precioUnit*l.cant-l.descCarrito)/l.cant:0},
-  sub(l){return l.precioUnit*l.cant-l.descCarrito},
+  eff(l){const q=qF(l);return q?(l.precioUnit*q-l.descCarrito)/q:0},
+  sub(l){return l.precioUnit*qF(l)-l.descCarrito},
   lineas(ctx,r,todas){const a=r.alcance||{};
     return ctx.lineas.filter(l=>!l.cerrado&&(todas||l.precioUnit!=null)&&enAlcance(l.sku,a)&&!(a.soloSinPactado&&l.pactado))},
   cambiar(l,r,detalle,fn){const capa=r._capa??TIPOS[r.tipo].capa;const antes=l.precioUnit==null?null:motor.eff(l);fn();
     l.pasos.push({capa,nombre:r.nombre,codigo:r.codigo||'',detalle,antes,despues:motor.eff(l)})}
 };
 motor.registrarTipo({id:'lista',nombre:'Lista de precios',capa:1,
-  descripcion:'Precio de corte por producto, con versiones, y su propio índice del huevo y la gallina. Precio = corte + factor × (índice de la lista ahora − índice del corte).',campos:[],
+  descripcion:'Precio de corte por producto, con versiones. Precio = corte + factor del producto × variación del día (puntos acumulados desde el corte).',campos:[],
   aplicar(ctx,r){const ver=versionVigente(r,ctx.momento);const precios=ver?.precios||{};let ok=false;
     for(const l of motor.lineas(ctx,r,true)){if(l.resuelto[1])continue;const p=num(precios[l.sku]);if(p==null)continue;
       l.lista=r;if(r.origen==='SAP'){motor.cambiar(l,r,`Precio fijo de SAP (VK11), sincronizado ${fFecha(r.sapSync)} ${String(r.sapSync||'').slice(11)}. No admite ajustes ni promociones del motor.`,()=>{l.precioUnit=p;l.resuelto[1]=true;l.cerrado=true});ok=true;continue}
       motor.cambiar(l,r,nomVer(ver,r),()=>{l.precioUnit=p;l.resuelto[1]=true});ok=true;
-      const tipo=l.producto.tipo,ref=ver.indiceRef?.[tipo],act=indiceLista(r,tipo,ctx.momento);
-      if(ref!=null&&act&&Math.abs(act.v-ref)>1e-9){const f=factorDe(l.producto),d=act.v-ref;
-        motor.cambiar(l,{_capa:1,nombre:`Variación del índice ${tipo.toLowerCase()}`,codigo:`${fmt(ref)} → ${fmt(act.v)} (${act.t.slice(11)})`},`${d>0?'+':'−'}S/ ${fmt(Math.abs(d))} × factor ${f.v} (${f.origen})`,()=>{l.precioUnit+=d*f.v})}}
-    return ok}});
-motor.registrarTipo({id:'cotizacion',nombre:'Anclado a cotización MINAGRI',capa:1,descripcion:'Precio = índice de la lista del cliente (cotización MINAGRI) × kilos por unidad + brecha.',
-  campos:[{key:'sku',label:'Producto',tipo:'sku'},{key:'factor',label:'Kilos por unidad (vacío = peso del maestro de productos)',tipo:'number',step:'0.01'},{key:'brecha',label:'Brecha sobre la cotización (S/ por unidad)',tipo:'number',step:'0.01'}],
-  aplicar(ctx,r){let ok=false;const f=num(r.params.factor)??(prod(r.params.sku)?.pesoKg||0),b=num(r.params.brecha)||0;const ix=indiceLista(listaPara(ctx.cliente,ctx.fecha),prod(r.params.sku)?.tipo,ctx.momento);if(!ix)return false;const cot=ix.v;
-    for(const l of motor.lineas(ctx,r,true)){if(l.resuelto[1]||l.sku!==r.params.sku)continue;const p=r2(cot*f+b);
-      motor.cambiar(l,r,`Índice S/ ${fmt(cot)} (${ix.t.slice(11)}) × ${f} kg + S/ ${fmt(b)}`,()=>{l.precioUnit=p;l.resuelto[1]=true});ok=true}
+      const tipo=l.producto.tipo,act=indiceLista(r,tipo,ctx.momento);
+      if(act&&act.v){const f=factorDe(l.producto),d=r2(act.v/100*f.v);
+        motor.cambiar(l,{_capa:1,nombre:`Variación del precio ${tipo==='Gallina'?'de la gallina':'del huevo'} del día`,codigo:`${fPts(act.v)} desde el corte (último cambio ${act.t.slice(11)})`},`${fPts(act.v)} × factor ${f.v} (${f.origen}) = ${d>=0?'+':'−'}S/ ${fmt(Math.abs(d))}`,()=>{l.precioUnit+=d})}}
     return ok}});
 motor.registrarTipo({id:'ajuste_base',nombre:'Movimiento comercial por zona o módulo',capa:2,
   descripcion:'Sube o baja unos puntos el precio de la lista solo para una parte de sus clientes (una zona, un módulo, un canal), por ejemplo para enfrentar a la competencia en un módulo. No reemplaza la lista ni el cambio del precio del huevo del día.',
@@ -654,7 +652,7 @@ motor.registrarTipo({id:'ajuste_base',nombre:'Movimiento comercial por zona o m�
   aplicar(ctx,r){const p=r.params||{},modo=p.modo||'monto',v=num(p.valor)||0;let ok=false;
     for(const l of motor.lineas(ctx,r)){
       if(modo==='precio'){const x=num(p.precios?.[l.sku]);if(x==null)continue;motor.cambiar(l,r,`Precio fijo S/ ${fmt(x)}`,()=>{l.precioUnit=x});ok=true}
-      else if(modo==='indice'){if(!v)continue;const f=factorDe(l.producto);motor.cambiar(l,r,`${v>0?'+':'−'}S/ ${fmt(Math.abs(v))} por kg × factor ${f.v}`,()=>{l.precioUnit+=v*f.v});ok=true}
+      else if(modo==='indice'){if(!v)continue;const f=factorDe(l.producto);motor.cambiar(l,r,`${fPts(v)} × factor ${f.v}`,()=>{l.precioUnit+=v/100*f.v});ok=true}
       else if(modo==='pct'){if(!v)continue;motor.cambiar(l,r,`${v>0?'+':'−'}${Math.abs(v)}%`,()=>{l.precioUnit*=1+v/100});ok=true}
       else{if(!v)continue;motor.cambiar(l,r,`${v>0?'+':'−'}${fq(Math.abs(v))} pts por ${l.producto.unidad}`,()=>{l.precioUnit+=v/100});ok=true}}
     return ok}});
@@ -723,11 +721,11 @@ motor.registrarTipo({id:'mezcla',nombre:'Descuento por mezcla',capa:5,descripcio
   campos:[{key:'minimo',label:'Productos distintos como mínimo',tipo:'number',step:'1'},{key:'unidad',label:'Cómo se expresa',tipo:'select',opciones:[{v:'pts',t:'Puntos por unidad (1 pt = S/ 0,01)'},{v:'pct',t:'Porcentaje (%)'}]},{key:'valor',label:'Descuento',tipo:'number',step:'0.01'}],
   aplicar(ctx,r){const min=num(r.params.minimo)||0,dd=desc(r.params||{});const dist=new Set(ctx.lineas.filter(l=>l.precioUnit!=null).map(l=>l.sku)).size;
     if(!dd.v||dist<min)return false;let ok=false;
-    for(const l of motor.lineas(ctx,r)){const d=dd.u==='pct'?motor.sub(l)*dd.v/100:dd.v/100*l.cant;motor.cambiar(l,r,`${dist} productos distintos: ${dd.txt}${dd.u==='pct'?'':' por '+l.producto.unidad}`,()=>{l.descCarrito+=d});ok=true}return ok}});
+    for(const l of motor.lineas(ctx,r)){const d=dd.u==='pct'?motor.sub(l)*dd.v/100:dd.v/100*qF(l);motor.cambiar(l,r,`${dist} productos distintos: ${dd.txt}${dd.u==='pct'?'':' por '+l.producto.unidad}`,()=>{l.descCarrito+=d});ok=true}return ok}});
 motor.registrarTipo({id:'pedido_pct',nombre:'Descuento sobre el pedido',capa:5,descripcion:'Descuento en puntos o % para todo el pedido; útil por canal de pedido (por ejemplo, WhatsApp).',
   campos:[{key:'unidad',label:'Cómo se expresa',tipo:'select',opciones:[{v:'pts',t:'Puntos por unidad (1 pt = S/ 0,01)'},{v:'pct',t:'Porcentaje (%)'}]},{key:'valor',label:'Descuento',tipo:'number',step:'0.01'}],
   aplicar(ctx,r){const dd=desc(r.params||{});if(!dd.v)return false;let ok=false;
-    for(const l of motor.lineas(ctx,r)){const d=dd.u==='pct'?motor.sub(l)*dd.v/100:dd.v/100*l.cant;motor.cambiar(l,r,dd.u==='pct'?`${dd.txt} sobre el subtotal`:`${dd.txt} por ${l.producto.unidad}`,()=>{l.descCarrito+=d});ok=true}return ok}});
+    for(const l of motor.lineas(ctx,r)){const d=dd.u==='pct'?motor.sub(l)*dd.v/100:dd.v/100*qF(l);motor.cambiar(l,r,dd.u==='pct'?`${dd.txt} sobre el subtotal`:`${dd.txt} por ${l.producto.unidad}`,()=>{l.descCarrito+=d});ok=true}return ok}});
 motor.registrarTipo({id:'recargo',nombre:'Recargo (despacho o pedido pequeño)',capa:6,descripcion:'Cobra un cargo por despacho, por pedido o por jaba; siempre o solo si el pedido no llega a un mínimo.',
   campos:[{key:'concepto',label:'Concepto que ve el cliente',tipo:'text'},
     {key:'cuando',label:'Cuándo se cobra',tipo:'select',opciones:[{v:'debajo',t:'Solo si el pedido no llega al mínimo'},{v:'siempre',t:'Siempre (por ejemplo, despacho a domicilio)'}]},
@@ -773,7 +771,7 @@ const TIPO_DEMO={id:'contado',nombre:'Descuento por pago al contado',capa:4,nuev
 
 /* ================= Motor: cálculo ================= */
 function elegible(r,ctx){const a=r.alcance||{};const inc=(arr,v)=>!arr||!arr.length||arr.includes(v);
-  return DIMS.every(([k,c])=>inc(a[k],c==='clase'?claseZona(ctx.cliente.zona):ctx.cliente[c]))&&inc(a.clientes,ctx.cliente.id)&&inc(a.canalesPedido,ctx.canalPedido)&&(!r.desde||ctx.fecha>=r.desde)&&(!r.hasta||ctx.fecha<=r.hasta)}
+  return DIMS.every(([k,c])=>inc(a[k],c==='clase'?claseZona(ctx.cliente.zona):c==='segmento'?segCli(ctx.cliente):ctx.cliente[c]))&&inc(a.clientes,ctx.cliente.id)&&inc(a.canalesPedido,ctx.canalPedido)&&(!r.desde||ctx.fecha>=r.desde)&&(!r.hasta||ctx.fecha<=r.hasta)}
 function cotizar(inp){
   const cliente=CLIENTES.find(c=>c.id===inp.clienteId)||CLIENTES[0];
   const momento=inp.momento||ahoraLocal();const ctx={cliente,canalPedido:inp.canalPedido,momento,fecha:momento.slice(0,10),
@@ -794,12 +792,12 @@ function cotizar(inp){
       let p=l.rebaja;const b=bandaLista(l.lista,l.sku);
       if(b&&p>0&&b.abajo!=null&&p>b.abajo){l.alertas.push({nivel:'adv',texto:`La rebaja de ${p} pts supera la banda de ${l.lista.codigo} (${b.abajo} pts). Se aplicó el máximo permitido.`});p=b.abajo}
       if(b&&p<0&&b.arriba!=null&&-p>b.arriba){l.alertas.push({nivel:'adv',texto:`El sobreprecio de ${-p} pts supera la banda de ${l.lista.codigo} (${b.arriba} pts). Se aplicó el máximo permitido.`});p=-b.arriba}
-      l.rebajaAplicada=p;motor.cambiar(l,{_capa:4,nombre:p>0?'Rebaja negociada por el vendedor':'Sobreprecio negociado por el vendedor',codigo:b?`Banda ${l.lista.codigo}: −${b.abajo??'∞'} / +${b.arriba??'∞'} pts`:''},`${p>0?'−':'+'}${Math.abs(p)} pts por ${l.producto.unidad}`,()=>{l.precioUnit-=p/100})}
+      l.rebajaAplicada=p;motor.cambiar(l,{_capa:4,nombre:p>0?'Rebaja negociada por el vendedor':'Sobreprecio negociado por el vendedor',codigo:b?`Banda ${l.lista.codigo}: −${b.abajo??'∞'} / +${b.arriba??'∞'} pts`:''},`${p>0?'−':'+'}${Math.abs(p)} pts por ${uV(l.producto)}`,()=>{l.precioUnit-=p/100})}
   }
   const huerf=state.reglas.filter(r=>r.activa&&!TIPOS[r.tipo]).length;
   if(huerf)ctx.alertas.push({nivel:'adv',texto:`${huerf} regla(s) usan un tipo no registrado y se omitieron.`});
   let total=0,lista=0;
-  for(const l of ctx.lineas){if(l.precioUnit==null){l.subtotal=0;l.efectivo=0;continue}l.subtotal=r2(motor.sub(l));l.efectivo=r2(l.subtotal/l.cant);total+=l.subtotal;lista+=l.precioLista*l.cant}
+  for(const l of ctx.lineas){if(l.precioUnit==null){l.subtotal=0;l.efectivo=0;continue}l.subtotal=r2(motor.sub(l));l.efectivo=r2(l.subtotal/(qF(l)||1));total+=l.subtotal;lista+=l.precioLista*qF(l);if(porPeso(l.producto))l.alertas.push({nivel:'info',texto:`Monto referencial: ${fq(l.cant)} ${l.producto.unidad}${l.cant===1?'':'es'} × ${fq(l.producto.pesoKg||0)} kg de peso referencial = ${fq(qF(l))} kg. Se factura con el peso real pesado en el despacho.`})}
   const cargos=ctx.cargos.reduce((s,c)=>s+c.monto,0);
   ctx.subtotal=r2(total);ctx.total=r2(total+cargos);ctx.valorLista=r2(lista);ctx.ahorro=r2(lista-total);
   return ctx;
@@ -809,7 +807,7 @@ function cotizar(inp){
 const ALTA='2026-09-01T09:12:00';
 function histLima(){const out=[];let d=new Date('2026-06-01T12:00:00'),k=0;const base={'HB-J':94,'HR-J':100,'HB-GJ':98,'HCO-J':114,'HP-B30':12.9,'GAL-U':17.4};
   while(d<new Date('2026-08-31T12:00:00')){k++;const f=d.toISOString().slice(0,10),m=k*0.25;out.push({v:k,desde:f,precios:Object.fromEntries(Object.entries(base).map(([s2,p])=>[s2,Math.round((p+(s2==='HP-B30'?m/10:m))*100)/100])),indiceRef:{Huevo:Math.round((5.0+k*0.015)*100)/100,Gallina:6.6},origen:'Carga masiva (corte-semanal.xlsx)',rol:'Analista de precios',registrado:f+'T08:00:00',comentario:'Corte semanal'});d.setDate(d.getDate()+7)}return out}
-function seed(){const r=seed0();r.forEach(x=>{if(x.versiones)x.versiones.sort((p,q)=>p.desde<q.desde?-1:p.desde>q.desde?1:0).forEach((v,i)=>v.v=i+1)});return r}
+function seed(){const r=seed0();r.forEach(x=>{(x.versiones||[]).forEach(v=>{if(v.precios?.['GAL-U']!=null)v.precios['GAL-U']=Math.round(v.precios['GAL-U']/2.6*100)/100});if(x.versiones)x.versiones.sort((p,q)=>p.desde<q.desde?-1:p.desde>q.desde?1:0).forEach((v,i)=>v.v=i+1)});return r}
 function seed0(){const AN='Analista de precios',h=hoy(),t2=h+'T'+String(Math.max(9,new Date().getHours()-1)).padStart(2,'0')+':30';
   const IX=(base,tarde,mov=true)=>({Huevo:[{t:'2026-09-01T08:00',v:base-0.10,rol:AN,com:'Corte de septiembre'},{t:'2026-10-01T08:00',v:base,rol:AN,com:'Corte de octubre'},{t:h+'T08:00',v:base,rol:AN,com:'Apertura del día'},...(mov?[{t:t2,v:tarde,rol:AN,com:'Variación intradía (+S/ 0.02)'}]:[])],Gallina:[{t:'2026-10-01T08:00',v:6.80,rol:AN,com:'Cotización MINAGRI'}]});
   return [
@@ -854,19 +852,19 @@ function seedAudit(){return [
   {fecha:ALTA,rol:'Analista de precios',accion:'Publicó carga masiva',detalle:'Carga inicial: 4 precios en 1 lista, vigencia desde 01/09/2026.'}]}
 
 /* ================= Estado ================= */
-const K_REG='mp17-reglas',K_AUD='mp8-auditoria',K_DEMO='mp4-tipo-contado',K_PROD='mp19-productos',K_CAT='mp11-catalogo',K_IDX='mp5-indice',K_FAC='mp18-factores',K_EST='mp11-estructura',K_CLI='mp8-clientes',K_CFG='mp10-config',K_USR='mp14-usuarios';
-const seedLimpio=()=>seed().filter(r=>r.tipo==='lista');
-const state={reglas:seedLimpio(),auditoria:seedAudit(),rol:'analista',vista:'panel',pf:{q:'',tipo:'',cat:'',attr:'',est:''},prodSel:null,listaSel:'R01',carga:null,filtro:'todos',editId:null,
-  sim:{clienteId:'C2',canalPedido:'Vendedor (app)',momento:'',lineas:[{sku:'HB-J',cant:20,rebaja:40},{sku:'HR-J',cant:10,rebaja:0},{sku:'HP-B30',cant:10,rebaja:0},{sku:'GAL-U',cant:20,rebaja:0}]}};
+const K_REG='mp22-reglas',K_AUD='mp21-auditoria',K_DEMO='mp4-tipo-contado',K_PROD='mp21-productos',K_CAT='mp11-catalogo',K_IDX='mp5-indice',K_FAC='mp21-factores',K_EST='mp11-estructura',K_CLI='mp21-clientes',K_CFG='mp10-config',K_USR='mp14-usuarios';
+const seedLimpio=()=>[];
+const state={reglas:seedLimpio(),auditoria:[],rol:'analista',vista:'panel',pf:{q:'',tipo:'',cat:'',attr:'',est:''},prodSel:null,listaSel:null,carga:null,filtro:'todos',editId:null,
+  sim:{clienteId:null,canalPedido:'Vendedor (app)',momento:'',lineas:[]}};
 function cargar(){
   try{if(localStorage.getItem(K_DEMO)==='1')motor.registrarTipo(TIPO_DEMO)}catch(e){}
   try{const s=JSON.parse(localStorage.getItem(K_REG)||'null');if(Array.isArray(s))state.reglas=s}catch(e){}
   try{const a=JSON.parse(localStorage.getItem(K_AUD)||'null');if(Array.isArray(a))state.auditoria=a}catch(e){}
-  try{const p=JSON.parse(localStorage.getItem(K_PROD)||'null');if(Array.isArray(p)&&p.length)setProductos(p)}catch(e){}
+  try{const p=JSON.parse(localStorage.getItem(K_PROD)||'null');if(Array.isArray(p))setProductos(p)}catch(e){}
   try{const c=JSON.parse(localStorage.getItem(K_CAT)||'null');if(c&&c.cat&&Array.isArray(c.atributos))setCatalogo(c)}catch(e){}
   try{const x=JSON.parse(localStorage.getItem(K_FAC)||'null');if(Array.isArray(x))setFactores(x)}catch(e){}
   try{const x=JSON.parse(localStorage.getItem(K_EST)||'null');if(x&&x.orgs)setEstructura(x)}catch(e){}
-  try{const x=JSON.parse(localStorage.getItem(K_CLI)||'null');if(Array.isArray(x)&&x.length)setClientes(x)}catch(e){}
+  try{const x=JSON.parse(localStorage.getItem(K_CLI)||'null');if(Array.isArray(x))setClientes(x)}catch(e){}
   try{const x=JSON.parse(localStorage.getItem(K_USR)||'null');if(x&&Array.isArray(x.lista)&&x.lista.length){setUsuarios(x.lista);state.usuario=x.actual}}catch(e){}
   try{const x=JSON.parse(localStorage.getItem(K_CFG)||'null');if(x&&x.huevosPorJaba>0)CONFIG.huevosPorJaba=x.huevosPorJaba;if(x&&x.kgJaba>0)CONFIG.kgJaba=x.kgJaba}catch(e){}
 }
@@ -886,6 +884,8 @@ const quien=()=>usr().nombre;
 const puede=()=>usr().rol==='analista';
 function canalesUsr(u=usr()){if(u.canales?.length)return u.canales;if(u.orgs?.length)return EST.canales.filter(c=>u.orgs.includes(c.padre)).map(c=>c.nombre);return null}
 const tiposUsr=(u=usr())=>u.tipos?.length?u.tipos:null;
+const TV=()=>tiposUsr()?.length===1&&tiposUsr()[0]==='Gallina'?'Gallina':'Huevo';
+const lblVar=()=>!tiposUsr()?'Cambiar precio del día':tiposUsr().length===1?`Cambiar precio ${tiposUsr()[0]==='Gallina'?'de la gallina':'del huevo'} del día`:'Cambiar precio del día';
 const veTipo=t=>!tiposUsr()||tiposUsr().includes(t);
 const sinRestriccion=(u=usr())=>!canalesUsr(u)&&!tiposUsr(u);
 const puedeAdmin=()=>puede()&&sinRestriccion();
@@ -1003,28 +1003,31 @@ function resumenAlcance(a={}){const p=[];
 function renderPanel(){
   const u=usr(),h=hoy(),ahora=ahoraLocal(),ls=listas().filter(r=>r.activa&&r.origen!=='SAP');
   const acc=[['sim','sim','Consultar el precio de un cliente','Elige cliente y productos; te dice el precio final y por qué.',true],
-    ['var-nueva','indice','Cambiar el precio del huevo del día','Sube o baja unos céntimos y se mueven todas las listas.',puede()&&TIPOS_IDX.some(t=>tipoEditable(t))],
+    ['var-nueva','indice',lblVar(),'Sube o baja unos céntimos el precio de referencia y se mueven todas las listas.',puede()&&TIPOS_IDX.some(t=>tipoEditable(t))],
     ['listas','listas','Cambiar precios de una lista','Edita el precio de corte de cada producto, con fecha de inicio.',puede()],
     ['regla-nueva','escala','Crear una promoción o escala','Descuentos, escalas por volumen, regalos y combos.',puede()],
     ['carga','carga','Cargar precios desde Excel','Descarga la plantilla, edítala y súbela.',puede()],
     ['auditoria','auditoria','Ver qué cambió','Quién cambió qué precio y cuándo.',true]].filter(a=>a[4]);
-  const desf=ls.filter(r=>idxDesfasado(r,'Huevo'));
+  const desf=ls.filter(r=>idxDesfasado(r,TV()));
   const prog=[];listas().forEach(r=>(r.versiones||[]).filter(v=>v.desde>h).forEach(v=>prog.push({r,v})));prog.sort((a,b)=>a.v.desde<b.v.desde?-1:1);
   C.innerHTML=`<div class="hola"><h2>Hola, ${esc(u.nombre.split(' ')[0])}</h2><p>¿Qué quieres hacer hoy?${puede()&&!sinRestriccion()?` <span class="nota">Tu permiso: ${esc(txtPermiso())}.</span>`:''}</p></div>
    <div class="acciones">${acc.map(([k,icn,t,d])=>`<button type="button" class="accion" ${['var-nueva','regla-nueva'].includes(k)?`data-act="${k}"`:`data-act="ir" data-v="${k}"`}><span class="ac-ic">${ic(icn)}</span><span class="ac-tx"><b>${t}</b><span>${d}</span></span><span class="ac-fl" aria-hidden="true">›</span></button>`).join('')}</div>
    <div class="grid2">
-    <section class="card"><div class="card-h"><div><h2>Precio del huevo ahora</h2><p>Índice de cada lista (S/ por kg) y su último cambio.</p></div></div>
-     <table class="t"><tbody>${ls.map(r=>{const a=indiceLista(r,'Huevo',ahora);return `<tr class="click" data-act="ver-lista" data-id="${r.id}"><td><b>${esc(r.nombre)}</b><span class="sub">${esc(r.codigo)}</span></td><td class="r"><b class="num">${a?fmt(a.v):'—'}</b><span class="sub">${a?(a.t.slice(0,10)===h?'hoy '+a.t.slice(11):fFecha(a.t)):''}</span></td><td style="width:1%">${idxDesfasado(r,'Huevo')?chip('No recibió el último cambio','adv'):''}</td></tr>`}).join('')}</tbody></table>
+    <section class="card"><div class="card-h"><div><h2>Precio ${TV()==='Gallina'?'de la gallina':'del huevo'} del día</h2><p>Variación de cada lista desde su último corte, en puntos. Cada producto se mueve variación × su factor.</p></div></div>
+     ${ls.length?'':`<div class="vacio">Aún no hay listas de precios.${puede()?' <button class="btn link" data-act="lista-nueva">Crear la primera lista</button>':''}</div>`}<table class="t"><tbody>${ls.map(r=>{const a=indiceLista(r,TV(),ahora);return `<tr class="click" data-act="ver-lista" data-id="${r.id}"><td><b>${esc(r.nombre)}</b><span class="sub">${esc(r.codigo)}</span></td><td class="r"><b class="num">${a?fPts(a.v):'0 pts'}</b><span class="sub">${a?(a.t.slice(0,10)===h?'hoy '+a.t.slice(11):fFecha(a.t)):'sin cambios'}</span></td><td style="width:1%">${idxDesfasado(r,TV())?chip('No recibió el último cambio','adv'):''}</td></tr>`}).join('')}</tbody></table>
      ${desf.length?`<p class="banner adv" style="margin:12px 16px">${desf.length} lista(s) no recibieron el último cambio del día. Revísalas antes de seguir vendiendo.</p>`:''}</section>
     <section class="card"><div class="card-h"><div><h2>Lo que viene</h2><p>Cambios de precio ya programados.</p></div></div>
      ${prog.length?`<table class="t"><tbody>${prog.map(({r,v})=>`<tr class="click" data-act="ver-lista" data-id="${r.id}"><td><b>${esc(r.nombre)}</b><span class="sub">${esc(v.comentario||'Nuevos precios')}</span></td><td class="r">${fFecha(v.desde)}</td></tr>`).join('')}</tbody></table>`:'<div class="vacio">No hay cambios programados.</div>'}
-     <div class="card-b" style="border-top:1px solid var(--line)"><p class="sep" style="margin-top:0">Últimos cambios</p>${state.auditoria.slice(0,3).map(a=>`<p class="ult"><b>${esc(a.accion)}</b><span class="nota">${fFechaHora(a.fecha)}, ${esc(a.rol)}</span></p>`).join('')}</div></section>
+     <div class="card-b" style="border-top:1px solid var(--line)"><p class="sep" style="margin-top:0">Últimos cambios</p>${state.auditoria.slice(0,3).map(a=>`<p class="ult"><b>${esc(a.accion)}</b><span class="nota">${fFechaHora(a.fecha)}, ${esc(a.rol)}</span></p>`).join('')}${state.auditoria.length?'':'<p class="nota" style="margin:0">Todavía no hay cambios registrados.</p>'}</div></section>
    </div>`}
 
 /* ================= Simulador ================= */
 const optP=sel=>PRODUCTOS.filter(p=>(p.activo&&veTipo(p.tipo))||p.sku===sel).map(p=>`<option value="${p.sku}"${p.sku===sel?' selected':''}>${esc(p.nombre)}${p.activo?'':' (inactivo)'}</option>`).join('');
 function renderSim(){
-  const s=state.sim;
+  const s=state.sim;if(!CLIENTES.some(c=>c.id===s.clienteId))s.clienteId=CLIENTES[0]?.id||null;
+  s.lineas=s.lineas.filter(l=>prod(l.sku));if(!s.lineas.length){const p0=PRODUCTOS.find(p=>p.activo&&veTipo(p.tipo));if(p0)s.lineas.push({sku:p0.sku,cant:10,rebaja:0})}
+  const falta=[!CLIENTES.length&&['clientes','un cliente'],!PRODUCTOS.some(p=>p.activo)&&['productos','un producto activo'],!state.reglas.some(r=>r.tipo==='lista')&&['listas','una lista de precios']].filter(Boolean);
+  if(falta.length){C.innerHTML=`<div class="vacio-grande"><span class="pg-ic">${ic('buscar')}</span><h3>Aún no hay datos para consultar un precio</h3><p>Para simular un pedido necesitas al menos ${falta.map(f=>f[1]).join(', ').replace(/, ([^,]*)$/,' y $1')}.</p><div class="acts" style="justify-content:center">${falta.map(f=>`<button class="btn sec" data-act="ir" data-v="${f[0]}">Ir a ${VISTAS[f[0]][0].toLowerCase()}</button>`).join('')}</div></div>`;return}
   C.innerHTML=`<div class="sim"><section class="card" style="margin:0"><div class="card-h"><h2>Datos del pedido</h2></div><div class="card-b">
     <label class="fld">Cliente<select data-sim="clienteId">${CLIENTES.map(c=>`<option value="${c.id}"${c.id===s.clienteId?' selected':''}>${esc(c.nombre)}</option>`).join('')}</select></label>
     <p class="hint" id="cli-info"></p>
@@ -1046,21 +1049,21 @@ function renderSimLineas(){if(tiposUsr()){state.sim.lineas=state.sim.lineas.filt
 function rango(bs,i,paso=1){const n=bs[i+1];return n?`${fq(bs[i].desde)} a ${fq(n.desde-paso)}`:`${fq(bs[i].desde)} o más`}
 const valBanda=(modo,v)=>modo==='precio'?'S/ '+fmt(v):modo==='descuento_pct'?'−'+v+'%':'−'+fq(v)+' pts';
 function bandasHTML(bs,actual,modo,paso=1){return `<div class="bandas">${bs.map((b,i)=>`<span class="banda${actual&&b.desde===actual.desde?' on':''}"><b class="num">${rango(bs,i,paso)}</b><span class="num">${valBanda(modo,b.valor)}</span></span>`).join('')}</div>`}
-function alertaHTML(a){const m={aprob:['adv','Requiere aprobación'],adv:['info','Aviso'],err:['err','Error']}[a.nivel];return `<p class="banner ${m[0]}"><b>${m[1]}.</b> ${esc(a.texto)}</p>`}
+function alertaHTML(a){const m={aprob:['adv','Requiere aprobación'],adv:['info','Aviso'],info:['info','Precio referencial'],err:['err','Error']}[a.nivel];return `<p class="banner ${m[0]}"><b>${m[1]}.</b> ${esc(a.texto)}</p>`}
 function renderSimRes(){
-  const c=CLIENTES.find(x=>x.id===state.sim.clienteId);const ci=$('#cli-info');if(ci)ci.textContent=`Oficina ${c.sede}, ${c.org}, canal ${c.canal}, zona ${c.zona}, módulo ${c.modulo}, pago ${c.pago.toLowerCase()}.`;const ii=$('#idx-info');if(ii){const m=state.sim.momento||ahoraLocal(),lp=listaPara(c,m.slice(0,10));ii.textContent=lp?`Zona ${c.zona}: ${claseZona(c.zona)||'sin tipo'}. Lista ${lp.codigo}. Índice a esa hora: `+TIPOS_IDX.map(t=>{const x=indiceLista(lp,t,m);return x?`${t.toLowerCase()} S/ ${fmt(x.v)} por kg (desde ${fFecha(x.t)} ${x.t.slice(11)})`:''}).filter(Boolean).join('; ')+'.':'Ninguna lista de precios aplica a este cliente.'}
+  const c=CLIENTES.find(x=>x.id===state.sim.clienteId);const ci=$('#cli-info');if(ci)ci.textContent=`Oficina ${c.sede}, ${c.org}, canal ${c.canal}, zona ${c.zona}, módulo ${c.modulo}, pago ${c.pago.toLowerCase()}.`;const ii=$('#idx-info');if(ii){const m=state.sim.momento||ahoraLocal(),lp=listaPara(c,m.slice(0,10));ii.textContent=lp?`Zona ${c.zona}: ${claseZona(c.zona)||'sin tipo'}. Lista ${lp.codigo}. Variación del día desde el corte: `+(TIPOS_IDX.map(t=>{const x=indiceLista(lp,t,m);return x?`${t.toLowerCase()} ${fPts(x.v)} (último cambio ${fFecha(x.t)} ${x.t.slice(11)})`:''}).filter(Boolean).join('; ')||'sin cambios')+'.':'Ninguna lista de precios aplica a este cliente.'}
   const out=$('#sim-res');if(!out)return;const ctx=cotizar(state.sim);
   if(!ctx.lineas.length){out.innerHTML=ctx.bloqueadas.map(b=>alertaHTML({nivel:'err',texto:`${b.nombre} (${b.sku}) ${b.motivo}.`})).join('')+'<div class="card"><div class="vacio">Agrega al menos un producto activo con cantidad para ver el cálculo.</div></div>';return}
   let h=`<div class="kpis">
-    <div class="kpi main"><p class="k">Total del pedido</p><p class="v num">${money(ctx.total)}</p><p class="s">Sin impuestos; SAP los calcula</p></div>
+    <div class="kpi main"><p class="k">Total del pedido${ctx.lineas.some(l=>porPeso(l.producto))?' (referencial)':''}</p><p class="v num">${money(ctx.total)}</p><p class="s">Sin impuestos; SAP los calcula${ctx.lineas.some(l=>porPeso(l.producto))?'. Lo vendido por peso se factura con el peso real':''}</p></div>
     <div class="kpi"><p class="k">Valor a precio de lista</p><p class="v num">${money(ctx.valorLista)}</p></div>
     <div class="kpi"><p class="k">Ahorro del cliente</p><p class="v num">${money(ctx.ahorro)}</p><p class="s">${ctx.valorLista?fmtPct(-ctx.ahorro/ctx.valorLista*100):''}</p></div>
     <div class="kpi"><p class="k">Ajustes aplicados</p><p class="v num">${ctx.aplicadas.length}</p><p class="s">de ${state.reglas.filter(r=>r.activa).length} activas</p></div></div>`;
   h+=ctx.bloqueadas.map(b=>alertaHTML({nivel:'err',texto:`${b.nombre} (${b.sku}) ${b.motivo}. La línea no se cotiza.`})).join('');
   if(ctx.requiereAprobacion)h+=alertaHTML({nivel:'aprob',texto:'Este pedido no se envía a SAP hasta que el supervisor apruebe la rebaja.'});
   h+=ctx.alertas.map(alertaHTML).join('');
-  for(const l of ctx.lineas){const u=l.producto.unidad;
-    h+=`<section class="card"><div class="card-h"><div class="lres-h" style="width:100%"><div><h3>${esc(l.producto.nombre)}</h3><p class="nota" style="margin:2px 0 0">${fq(l.cant)} ${u}${l.cant===1?'':'s'}${esJaba(l.producto)&&eqJ(l.producto)!==1?` (${fq(cantMed(l))} jabas)`:''}, SKU ${l.sku}</p></div>
+  for(const l of ctx.lineas){const u=uV(l.producto);
+    h+=`<section class="card"><div class="card-h"><div class="lres-h" style="width:100%"><div><h3>${esc(l.producto.nombre)}</h3><p class="nota" style="margin:2px 0 0">${fq(l.cant)} ${l.producto.unidad}${l.cant===1?'':'s'}${porPeso(l.producto)?` (≈ ${fq(qF(l))} kg referenciales)`:''}${esJaba(l.producto)&&eqJ(l.producto)!==1?` (${fq(cantMed(l))} jabas)`:''}, SKU ${l.sku}</p></div>
       <div class="fin"><p class="u num">${l.precioUnit==null?'Sin precio':money(l.efectivo)}</p><p class="s num">${l.precioUnit==null?'':'por '+u+', subtotal '+money(l.subtotal)}</p></div></div></div>`;
     if(l.pasos.length)h+=`<details class="calc"><summary>Ver cómo se calculó (${l.pasos.length} paso${l.pasos.length===1?'':'s'})</summary><div class="scroll"><table class="t"><thead><tr><th>Paso</th><th>Qué se aplicó</th><th>Detalle</th><th class="r">Precio unitario</th><th class="r">Cambio</th></tr></thead><tbody>${l.pasos.map(p=>`<tr>
       <td style="white-space:nowrap">${capaTag(p.capa)}${esc(capaDe(p.capa).nombre)}</td><td><b>${esc(p.nombre)}</b>${p.codigo?`<span class="sub">${esc(p.codigo)}</span>`:''}</td>
@@ -1083,15 +1086,14 @@ function renderSimRes(){
 function idxCelda(r,t){if(r.origen==='SAP')return '<td class="r nota">Fijo SAP</td>';const a=indiceLista(r,t,ahoraLocal());if(!a)return '<td class="r nota">—</td>';
   const ult=Math.max(...listas().filter(x=>x.activa).map(x=>{const y=indiceLista(x,t,ahoraLocal());return y&&y.t.slice(0,10)===hoy()?Date.parse(y.t):0}));
   const desf=ult>0&&Date.parse(a.t)<ult;
-  return `<td class="r">${fmt(a.v)}<span class="sub">${a.t.slice(0,10)===hoy()?'hoy '+a.t.slice(11):fFecha(a.t)}</span>${desf?chip('Sin la última variación','adv'):''}</td>`}
+  return `<td class="r">${fPts(a.v)}<span class="sub">${a.t.slice(0,10)===hoy()?'hoy '+a.t.slice(11):fFecha(a.t)}</span>${desf?chip('Sin la última variación','adv'):''}</td>`}
 const VA_DIMS=[['orgs','Organización de ventas',()=>ORGS],['sedes','Oficina de venta',()=>SEDES],['canales','Canal de distribución',()=>CANALES]];
 function listasDeFiltro(f){return listas().filter(r=>r.activa&&r.origen!=='SAP'&&permisoLista(r)&&VA_DIMS.every(([k])=>!f[k].length||(r.alcance?.[k]||[]).some(x=>f[k].includes(x))))}
 function abrirVariacion(){
   state.dlg={modo:'variacion'};$('#dlg-t').textContent='Cambiar precio del huevo del día';$('#dlg-ok').textContent='Aplicar cambio';
   $('#dlg-b').innerHTML=`<p class="banner err" id="frm-err" hidden></p>
-   <div class="row2"><label class="fld">Tipo de producto<select id="va-tipo">${TIPOS_IDX.filter(t=>tipoEditable(t)).map(t=>`<option>${t}</option>`).join('')}</select></label><label class="fld">Vigente desde<input type="datetime-local" id="va-t" value="${ahoraLocal()}"></label></div>
-   <div class="chks" style="margin-bottom:10px"><label class="chk"><input type="radio" name="va-modo" value="delta" checked>Subir o bajar (por ejemplo, +0,02)</label><label class="chk"><input type="radio" name="va-modo" value="valor">Poner un valor nuevo</label></div>
-   <label class="fld" style="max-width:260px">Monto (S/ por kg)<input type="number" step="0.01" id="va-v" placeholder="Ej. 0.02 o -0.03" class="num"></label>
+   <div class="row2"><label class="fld">Tipo de producto<select id="va-tipo">${TIPOS_IDX.filter(t=>tipoEditable(t)).map(t=>`<option${t===TV()?' selected':''}>${t}</option>`).join('')}</select></label><label class="fld">Vigente desde<input type="datetime-local" id="va-t" value="${ahoraLocal()}"></label></div>
+   <label class="fld" style="max-width:300px">Variación (puntos; 1 pt = S/ 0,01)<input type="number" step="1" id="va-v" placeholder="Ej. 5 para subir, -3 para bajar" class="num"></label><p class="hint" style="margin:-6px 0 12px">El precio de lista de cada producto cambia variación × su factor. Se acumula hasta el próximo corte de precios.</p>
    <p class="sep">A qué listas aplica</p><p class="hint" style="margin:0 0 8px">Vacío = todas las listas activas. Ejemplo: solo Arequipa, o solo canal Mayorista. Las listas de SAP (VK11) nunca se modifican desde aquí.</p>
    <div class="grid-ms">${VA_DIMS.map(([k,t,fn])=>dimHTML('va-',k,t,fn,[])).join('')}</div>
    <label class="fld">Comentario (obligatorio)<input type="text" id="va-c" placeholder="Ej. Alza de la tarde"></label>
@@ -1100,24 +1102,23 @@ function abrirVariacion(){
 }
 function leerVariacion(){const root=$('#dlg-b'),ch=k=>[...root.querySelectorAll(`[data-k="${k}"]:checked`)].map(x=>x.value);
   const f=Object.fromEntries(VA_DIMS.map(([k])=>[k,ch('va-'+k)]));
-  return {tipo:$('#va-tipo').value,t:$('#va-t').value,modo:root.querySelector('[name="va-modo"]:checked').value,v:num($('#va-v').value),com:$('#va-c').value.trim(),f,ls:listasDeFiltro(f)}}
+  return {tipo:$('#va-tipo').value,t:$('#va-t').value,modo:'delta',v:num($('#va-v').value),com:$('#va-c').value.trim(),f,ls:listasDeFiltro(f)}}
 function previewVariacion(){const box=$('#va-prev');if(!box)return;const q=leerVariacion();$('#dlg-t').textContent=`Cambiar precio ${q.tipo==='Gallina'?'de la gallina':'del huevo'} del día`;
   if(!q.ls.length){box.innerHTML='<p class="banner adv">Ninguna lista activa cumple el filtro.</p>';return}
-  const filas=[];q.ls.forEach(r=>{const a=indiceLista(r,q.tipo,q.t||ahoraLocal());if(!a)return;const nuevo=q.v==null?a.v:(q.modo==='delta'?a.v+q.v:q.v);const ver=versionVigente(r,(q.t||ahoraLocal()).slice(0,10));
-    PRODUCTOS.filter(p=>p.tipo===q.tipo&&ver?.precios?.[p.sku]!=null).forEach(p=>{const f=factorDe(p).v;filas.push({r,p,f,antes:a.v,nuevo,d:(nuevo-a.v)*f})})});
-  const sin=q.ls.filter(r=>!indiceLista(r,q.tipo,q.t||ahoraLocal()));
-  box.innerHTML=`<p class="banner info"><b>Aplica a ${q.ls.length} lista(s):</b> ${q.ls.map(r=>esc(r.codigo)).join(', ')}.${sin.length?` Sin índice de ${q.tipo.toLowerCase()}: ${sin.map(r=>esc(r.codigo)).join(', ')} (no cambian).`:''}</p>
-   ${q.v==null?'':`<div class="scroll"><table class="t"><thead><tr><th>Lista</th><th>SKU</th><th class="r">Índice</th><th class="r">Factor</th><th class="r">Cambio de precio</th></tr></thead><tbody>
-   ${filas.map(x=>`<tr><td>${esc(x.r.codigo)}</td><td>${esc(x.p.sku)}<span class="sub">${esc(x.p.nombre)}</span></td><td class="r">${fmt(x.antes)} → ${fmt(x.nuevo)}</td><td class="r">${x.f}</td><td class="r">${x.d>=0?'+':'−'}S/ ${fmt(Math.abs(x.d))}</td></tr>`).join('')}</tbody></table></div>`}`}
+  const filas=[],m=q.t||ahoraLocal();q.ls.forEach(r=>{const ver=versionVigente(r,m);if(!ver)return;const antes=indiceLista(r,q.tipo,m)?.v||0;
+    PRODUCTOS.filter(p=>p.tipo===q.tipo&&ver.precios?.[p.sku]!=null).forEach(p=>{const f=factorDe(p).v,pr=ver.precios[p.sku]+r2(antes/100*f),d=r2((antes+(q.v||0))/100*f)-r2(antes/100*f);filas.push({r,p,f,antes,pr,d})})});
+  const sin=q.ls.filter(r=>!versionVigente(r,m));
+  box.innerHTML=`<p class="banner info"><b>Aplica a ${q.ls.length} lista(s):</b> ${q.ls.map(r=>esc(r.codigo)).join(', ')}.${sin.length?` Sin precios vigentes: ${sin.map(r=>esc(r.codigo)).join(', ')} (no cambian).`:''}</p>
+   ${q.v==null?'':`<div class="scroll"><table class="t"><thead><tr><th>Lista</th><th>SKU</th><th class="r">Factor</th><th class="r">Precio actual</th><th class="r">Cambio</th><th class="r">Precio nuevo</th></tr></thead><tbody>
+   ${filas.map(x=>`<tr><td>${esc(x.r.codigo)}</td><td>${esc(x.p.sku)}<span class="sub">${esc(x.p.nombre)}</span></td><td class="r">${x.f}</td><td class="r">${money(x.pr)}</td><td class="r">${x.d>=0?'+':'−'}S/ ${fmt(Math.abs(x.d))}</td><td class="r"><b>${money(x.pr+x.d)}</b></td></tr>`).join('')}</tbody></table></div>`}`}
 function guardarVariacion(root,fail){const q=leerVariacion();
-  if(q.v==null)return fail('Ingresa el monto.');if(q.modo==='valor'&&q.v<=0)return fail('El nuevo valor debe ser mayor que cero.');if(q.modo==='delta'&&q.v===0)return fail('La variación no puede ser cero.');
+  if(q.v==null)return fail('Ingresa la variación en puntos.');if(q.v===0)return fail('La variación no puede ser cero.');if(!Number.isInteger(q.v))return fail('La variación se indica en puntos enteros (1 pt = S/ 0,01).');
   if(!q.t)return fail('Indica la fecha y hora.');if(!q.com)return fail('Escribe un comentario.');
-  const ls=q.ls.filter(r=>indiceLista(r,q.tipo,q.t));if(!ls.length)return fail('Ninguna de las listas filtradas tiene índice para este tipo de producto.');
-  const grande=ls.find(r=>{const a=indiceLista(r,q.tipo,q.t).v,n=q.modo==='delta'?a+q.v:q.v;return Math.abs(n-a)/a>0.05});
-  if(grande&&!confirm('Hay listas con un cambio mayor al 5 %. ¿Confirmas?'))return false;
-  ls.forEach(r=>{const a=indiceLista(r,q.tipo,q.t).v;(r.indice[q.tipo]=r.indice[q.tipo]||[]).push({t:q.t,v:r2(q.modo==='delta'?a+q.v:q.v),rol:quien(),com:q.com})});
+  const ls=q.ls.filter(r=>versionVigente(r,q.t));if(!ls.length)return fail('Ninguna de las listas filtradas tiene precios vigentes a esa hora.');
+  if(Math.abs(q.v)>=100&&!confirm(`${fPts(q.v)} es S/ ${fmt(Math.abs(q.v)/100)} por cada punto de factor. ¿Confirmas?`))return false;
+  ls.forEach(r=>{r.indice=r.indice||{};(r.indice[q.tipo]=r.indice[q.tipo]||[]).push({t:q.t,d:q.v,rol:quien(),com:q.com})});
   const filtro=VA_DIMS.filter(([k])=>q.f[k].length).map(([k,t])=>t+' '+q.f[k].join(', ')).join('; ')||'todas las listas';
-  audit('Registró variación del índice',`${q.tipo}: ${q.modo==='delta'?(q.v>0?'+':'−')+'S/ '+fmt(Math.abs(q.v))+' por kg':'nuevo valor S/ '+fmt(q.v)} desde ${fFecha(q.t)} ${q.t.slice(11)} en ${ls.map(r=>r.codigo).join(', ')} (${filtro}). ${q.com}`);
+  audit('Registró variación del precio del día',`${q.tipo}: ${fPts(q.v)} desde ${fFecha(q.t)} ${q.t.slice(11)} en ${ls.map(r=>r.codigo).join(', ')} (${filtro}). ${q.com}`);
   toast(`Variación registrada en ${ls.length} lista(s)`);return true}
 function abrirFactor(id){const f=id?FACTORES.find(x=>x.id===id):null;state.dlg={modo:'factor',id};const g=f?.grupo||{};
   $('#dlg-t').textContent=f?'Editar factor por agrupador':'Nuevo factor por agrupador';$('#dlg-ok').textContent=f?'Guardar cambios':'Crear factor';
@@ -1195,12 +1196,12 @@ function renderClientesPag(){state.cliF=state.cliF||{q:'',org:'',sede:'',canal:'
 function filtrarClientes(){const f=state.cliF||{},q=normH(f.q||'');return CLIENTES.filter(c=>(!q||normH(c.nombre+' '+(c.ruc||'')).includes(q))&&(!f.org||c.org===f.org)&&(!f.sede||c.sede===f.sede)&&(!f.canal||c.canal===f.canal));}
 function renderCliTabla(){const {ver:cs,pie}=paginar('clientes',filtrarClientes(),renderCliTabla);
   $('#cli-tabla').innerHTML=`<table class="t"><thead><tr><th>Cliente</th><th>Organización y canal</th><th>Oficina, zona y módulo</th><th>Pago</th><th>Lista que aplica</th><th></th></tr></thead><tbody>
-   ${cs.map(c=>{const inc=cliInconsistente(c),l=listaPara(c,hoy());return `<tr><td><b>${esc(c.nombre)}</b><span class="sub">${c.ruc?'RUC '+esc(c.ruc):'Sin RUC registrado'}</span></td><td>${esc(c.org)}<span class="sub">${esc(c.canal)}</span></td>
+   ${cs.map(c=>{const inc=cliInconsistente(c),l=listaPara(c,hoy());return `<tr><td><b>${esc(c.nombre)}</b>${segCli(c)==='Nuevo'?' '+chip('Nuevo','info'):''}<span class="sub">${c.ruc?'RUC '+esc(c.ruc):'Sin RUC registrado'}</span></td><td>${esc(c.org)}<span class="sub">${esc(c.canal)}</span></td>
      <td>${esc(c.sede)}<span class="sub">${esc(c.zona)} (${esc(claseZona(c.zona)||'sin tipo')}), módulo ${esc(c.modulo)}</span>${inc.length?`<span class="sub">${chip('Inconsistente','adv')} ${esc(inc.join('; '))}</span>`:''}</td><td>${esc(c.pago)}</td>
      <td>${l?`<button class="btn link" style="padding:0" data-act="ver-lista" data-id="${l.id}">${esc(l.codigo)}</button>`:chip('Sin lista','err')}</td>
      <td class="acc">${puede()?`<button class="ib" data-act="cli-ed" data-id="${c.id}" title="Editar" aria-label="Editar ${esc(c.nombre)}">${ic('editar')}</button><button class="ib danger" data-act="cli-del" data-id="${c.id}" title="Eliminar" aria-label="Eliminar ${esc(c.nombre)}">${ic('borrar')}</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="vacio">No hay clientes con estos filtros.</td></tr>'}</tbody></table>`;$('#cli-pie').innerHTML=pie}
 function renderCategorias(){
-  C.innerHTML=pgHead('categorias','Tipos y categorías','El tipo de producto define su comportamiento (por ejemplo, la gallina sigue su propio índice); la categoría agrupa productos para reportes, reglas y escalas.','')+
+  C.innerHTML=pgHead('categorias','Tipos y categorías','El tipo de producto define su comportamiento (por ejemplo, la gallina tiene su propia variación del día); la categoría agrupa productos para reportes, reglas y escalas.','')+
    `<div class="grid-cat">${TIPOS_PROD.map(t=>{const cs=CAT[t]||[];return `<section class="card" style="margin:0"><div class="card-h"><div><h2>${t}</h2><p>${PRODUCTOS.filter(p=>p.tipo===t).length} producto(s), ${cs.length} categoría(s)</p></div></div>
      <table class="t"><thead><tr><th>Categoría</th><th class="r">Productos</th><th class="r">Reglas</th><th></th></tr></thead><tbody>
      ${cs.map(c=>{const n=PRODUCTOS.filter(p=>p.tipo===t&&p.categoria===c).length,rr=state.reglas.filter(r=>JSON.stringify(r.alcance?.grupo||{}).includes(`"${t}/${c}"`)||JSON.stringify(r.params?.tabla||{}).includes(`cat:${t}/${c}`)).length;
@@ -1281,6 +1282,7 @@ function abrirCli(id){const c=id?CLIENTES.find(x=>x.id===id):null;state.dlg={mod
    <div class="row2"><label class="fld">Razón social<input type="text" id="cl-n" value="${esc(c?.nombre||'')}"></label><label class="fld">RUC<input type="text" id="cl-r" value="${esc(c?.ruc||'')}" maxlength="11"></label></div>
    <p class="sep">Organización comercial</p><div class="row2"><label class="fld">Organización de ventas<select id="cl-org"></select></label><label class="fld">Canal de distribución<select id="cl-can"></select></label></div>
    <p class="sep">Ubicación</p><div class="row2"><label class="fld">Oficina de venta<select id="cl-sede"></select></label><label class="fld">Zona<select id="cl-zona"></select></label></div>
+   <label class="fld" style="max-width:260px">Cliente desde (primera compra)<input type="date" id="cl-alta" value="${c?.alta||hoy()}"><span class="hint" style="margin:4px 0 0">Se considera nuevo durante sus primeros ${CONFIG.diasNuevo} días.</span></label>
    <div class="row2"><label class="fld">Módulo<select id="cl-mod"></select></label><label class="fld">Condición de pago<select id="cl-pago">${PAGOS.map(p=>`<option${p===c?.pago?' selected':''}>${p}</option>`).join('')}</select></label></div>
    <div id="cl-prev"></div>`;
   pintarCli();abrirDlg()}
@@ -1294,7 +1296,7 @@ function pintarCli(){const d=state.dlg.c,opt=(arr,v)=>arr.map(x=>`<option${x===v
 function guardarCli(root,fail){const d=state.dlg.c,nombre=$('#cl-n').value.trim(),ruc=$('#cl-r').value.trim();
   if(!nombre)return fail('Escribe la razón social.');if(ruc&&!/^\d{11}$/.test(ruc))return fail('El RUC debe tener 11 dígitos.');
   if(!d.canal||!d.zona||!d.modulo)return fail('Completa organización, canal, oficina, zona y módulo.');
-  const datos={nombre,ruc,org:d.org,canal:d.canal,sede:d.sede,zona:d.zona,modulo:d.modulo,pago:$('#cl-pago').value};
+  const datos={nombre,ruc,org:d.org,canal:d.canal,sede:d.sede,zona:d.zona,modulo:d.modulo,pago:$('#cl-pago').value,alta:$('#cl-alta').value||null};
   if(state.dlg.id){Object.assign(CLIENTES.find(x=>x.id===state.dlg.id),datos);audit('Editó un cliente',`${nombre}: ${datos.org}, ${datos.canal}, ${datos.sede}.`)}
   else{CLIENTES.push({id:'C'+Date.now(),...datos});audit('Creó un cliente',`${nombre}: ${datos.org}, ${datos.canal}, ${datos.sede}.`)}
   toast('Cliente guardado');return true}
@@ -1321,7 +1323,7 @@ function renderProductosTabla(){const lg=listaGeneral(),vg=lg?versionVigente(lg,
   $('#prod-tabla').innerHTML=`<table class="t"><thead><tr><th>Producto</th><th>Tipo y categoría</th><th>Presentación</th><th class="r">Precio vigente<span class="sub" style="font-weight:400">${esc(lg?.nombre||'')}</span></th><th>Estado</th><th></th></tr></thead><tbody>
   ${ps.map(p=>{const pv=vg?.precios?.[p.sku];return `<tr class="click${p.activo?'':' off'}" data-act="prod-ed" data-sku="${p.sku}">
     <td><b>${esc(p.nombre)}</b><span class="sub">${esc(p.sku)}${p.codigoSap?', SAP '+esc(p.codigoSap):''}</span></td><td>${esc(p.tipo)}<span class="sub">${esc(p.categoria)}</span></td>
-    <td>${esc(p.unidad)}<span class="sub">${esc(contenidoTxt(p))}${p.pesoTipo==='certificado'&&p.pesoKg?`, ${fq(p.pesoKg)} kg certificado`:''}</span></td><td class="r">${pv!=null?money(pv):chip('Sin precio','adv')}</td><td>${p.activo?chip('Activo','ok'):chip('Inactivo','gris')}</td>
+    <td>${esc(p.unidad)}<span class="sub">${esc(contenidoTxt(p))}${p.pesoTipo==='certificado'&&p.pesoKg?`, ${fq(p.pesoKg)} kg certificado`:''}</span></td><td class="r">${pv!=null?money(pv)+(porPeso(p)?'<span class="sub">por kg</span>':''):chip('Sin precio','adv')}</td><td>${p.activo?chip('Activo','ok'):chip('Inactivo','gris')}</td>
     <td class="acc">${`<button class="ib" data-act="prod-ed" data-sku="${p.sku}" title="${tipoEditable(p.tipo)?'Editar':'Ver ficha'}" aria-label="Abrir ${esc(p.nombre)}">${ic(tipoEditable(p.tipo)?'editar':'ojo')}</button>`}${tipoEditable(p.tipo)?`<button class="ib danger" data-act="prod-del" data-sku="${p.sku}" title="Eliminar" aria-label="Eliminar ${esc(p.nombre)}">${ic('borrar')}</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="vacio">Ningún producto coincide con la búsqueda.</td></tr>'}</tbody></table>`;
   $('#prod-pie').innerHTML=pie}
 function renderProductoDetalle(){
@@ -1347,7 +1349,7 @@ function abrirProducto(sku){
   const tabs=[['basico','Básico','productos'],['presentacion','Presentación','m-modulos'],['atributos','Atributos','atributos'],['venta','Venta','carrito'],['precios','Precios por lista','listas'],['uso','Dónde se usa','reglas']];
   const h=hoy(),u=p?usoProducto(p.sku):null;
   const precios=p?`<p class="hint">El precio vive en las listas, con versión y fecha. Aquí solo se consulta; para cambiarlo, abre la lista.</p><div class="scroll"><table class="t"><thead><tr><th>Lista</th><th class="r">Precio de corte</th><th class="r">Precio ahora</th><th class="r">Programado</th><th></th></tr></thead><tbody>
-    ${listas().map(r=>{const v=versionVigente(r,h),n=versionProxima(r,h),pv=v?.precios?.[p.sku];if(pv==null&&n?.precios?.[p.sku]==null)return '';const ref=v?.indiceRef?.[p.tipo],ix=indiceLista(r,p.tipo,ahoraLocal()),act=pv!=null&&ref!=null&&ix?pv+(ix.v-ref)*factorDe(p).v:pv;
+    ${listas().map(r=>{const v=versionVigente(r,h),n=versionProxima(r,h),pv=v?.precios?.[p.sku];if(pv==null&&n?.precios?.[p.sku]==null)return '';const act=pv!=null?pv+varSku(r,p,ahoraLocal()):pv;
       return `<tr><td><b>${esc(r.nombre)}</b><span class="sub">${esc(r.codigo)}</span></td><td class="r">${pv!=null?money(pv):'—'}</td><td class="r">${act!=null?money(act):'—'}</td><td class="r">${n?.precios?.[p.sku]!=null?money(n.precios[p.sku])+`<span class="sub">desde ${fFecha(n.desde)}</span>`:'—'}</td><td class="acc"><button type="button" class="btn link" data-act="ver-lista" data-id="${r.id}">Abrir lista</button></td></tr>`}).join('')||'<tr><td colspan="5" class="vacio">Este producto no está en ninguna lista todavía.</td></tr>'}</tbody></table></div>`:'<p class="vacio">Guarda el producto para luego cargarle precio en las listas.</p>';
   const uso=p?`<div class="scroll"><table class="t"><thead><tr><th>Promoción o regla</th><th>Tipo</th><th>Cómo lo incluye</th><th>Estado</th></tr></thead><tbody>${u.reglas.map(r=>`<tr><td><b>${esc(r.nombre)}</b><span class="sub">${esc(r.codigo||'')}</span></td><td>${esc(TIPOS[r.tipo]?.nombre||'')}</td><td>${porAtributo(p).some(x=>x.id===r.id)?chip('Por atributo','info'):chip('Por SKU','gris')}</td><td>${r.activa?chip('Activa','ok'):chip('Inactiva','gris')}</td></tr>`).join('')||'<tr><td colspan="4" class="vacio">Ninguna promoción lo incluye de forma específica.</td></tr>'}</tbody></table></div>`:'<p class="vacio">Disponible cuando el producto esté guardado.</p>';
   $('#dlg-b').innerHTML=`<div id="p-form"><p class="banner err" id="frm-err" hidden></p>${p&&!ed?`<p class="banner info">${ic('candado')} Solo consulta: los productos de tipo ${esc(p.tipo.toLowerCase())} están fuera de tu permiso.</p>`:''}
@@ -1356,14 +1358,13 @@ function abrirProducto(sku){
    <div class="tp" data-tp="basico"><div class="row2"><label class="fld">Nombre comercial<input type="text" id="p-nombre" value="${esc(p?.nombre||'')}" placeholder="Ej. Huevo blanco"></label><label class="fld">SKU<input type="text" id="p-sku" value="${esc(p?.sku||'')}" ${p?'disabled':''} placeholder="Ej. HB-B15"></label></div>
     <div class="row2"><label class="fld">Tipo de producto${sel('p-tipo',TIPOS_PROD.filter(t=>tipoEditable(t)||t===p?.tipo),p?.tipo||TIPOS_PROD.find(t=>tipoEditable(t))||'Huevo')}</label><label class="fld">Categoría<select id="p-cat"></select></label></div>
     <div class="row2"><label class="fld">Código SAP (material)<input type="text" id="p-sap" value="${esc(p?.codigoSap||'')}" placeholder="Opcional"></label><label class="chk" style="align-self:center"><input type="checkbox" id="p-act"${!p||p.activo?' checked':''}>Producto activo (si lo apagas, sigue en el catálogo pero no se puede vender)</label></div></div>
-   <div class="tp" data-tp="presentacion" hidden><div class="row2"><label class="fld">Unidad de venta${sel('p-uni',UNIDADES,p?.unidad)}</label><label class="fld">Huevos por unidad de venta<input type="number" step="1" min="0" id="p-huevos" value="${p?.huevos??''}" class="num" placeholder="Ej. 180 por jaba, 30 por bandeja"></label></div>
-    <div class="row2"><label class="chk" style="align-self:center"><input type="checkbox" id="p-mj"${!p||p.mideJaba?' checked':''}>Se mide en jabas para las escalas de volumen</label><p class="hint" id="p-eqtxt" style="margin:0;align-self:center"></p></div>
-    <label class="fld">Contenido (otros productos)<input type="text" id="p-cont" value="${esc(p?.contenido||'')}" placeholder="Ej. 1 ave"></label>
+   <div class="tp" data-tp="presentacion" hidden><div class="row2"><label class="fld">Unidad de venta${sel('p-uni',UNIDADES,p?.unidad)}</label><label class="fld p-solo-huevo">Huevos por unidad de venta<input type="number" step="1" min="0" id="p-huevos" value="${p?.huevos??''}" class="num" placeholder="Ej. 180 por jaba, 30 por bandeja"></label></div>
+    <div class="row2 p-solo-huevo"><label class="chk" style="align-self:center"><input type="checkbox" id="p-mj"${!p||p.mideJaba?' checked':''}>Se mide en jabas para las escalas de volumen</label><p class="hint" id="p-eqtxt" style="margin:0;align-self:center"></p></div>
+    <label class="chk p-solo-otro" style="margin-bottom:12px"><input type="checkbox" id="p-vp"${p?.ventaPeso||(!p)?' checked':''}>Se vende por peso: el precio de lista es por kg y el monto del pedido es referencial (peso referencial × cantidad × precio); se factura con el peso real del despacho</label>
+    <label class="fld p-solo-otro">Contenido<input type="text" id="p-cont" value="${esc(p?.contenido||'')}" placeholder="Ej. 1 ave"></label>
     <div class="row2"><label class="fld">Peso por unidad de venta (kg)<input type="number" step="0.01" min="0" id="p-peso" value="${p?.pesoKg??''}" class="num"></label>
      <label class="fld">Tipo de peso<select id="p-ptipo"><option value="referencial"${p?.pesoTipo!=='certificado'?' selected':''}>Referencial (varía según plancha, caja o paquete)</option><option value="certificado"${p?.pesoTipo==='certificado'?' selected':''}>Certificado (peso garantizado)</option></select></label></div>
-    <div class="row2"><label class="fld">Cómo sigue el cambio del precio del huevo del día<select id="p-bv"><option value="huevos"${p&&baseVar(p)==='huevos'?' selected':''}>Por cantidad de huevos (recomendado)</option><option value="peso"${p&&baseVar(p)==='peso'?' selected':''}>Por peso (para peso certificado o gallina)</option><option value="manual"${p&&baseVar(p)==='manual'?' selected':''}>Factor manual</option></select></label>
-     <label class="fld" id="p-fac-w">Factor manual<input type="number" step="0.01" min="0" id="p-fac" value="${p?.factor??''}" class="num"></label></div>
-    <p class="hint" id="p-factxt"></p></div>
+    <div class="row2"><label class="fld" id="p-fac-w">Factor de variación<input type="number" step="0.01" min="0" id="p-fac" value="${p?.factor??1}" class="num"></label><p class="hint" id="p-factxt" style="margin:0;align-self:center"></p></div></div>
    <div class="tp" data-tp="atributos" hidden><p class="hint">Sirven para agrupar productos en promociones y escalas (por ejemplo, todo el granel mediano).</p><div id="p-attrs"></div><div id="p-prev"></div></div>
    <div class="tp" data-tp="venta" hidden>${grupoChk('p-canales','Canales donde se vende',CANALES_PEDIDO.map(x=>({v:x,t:x})),p?p.canales:[...CANALES_PEDIDO],'Ninguno')}
     <label class="fld" style="max-width:320px">Afectación de IGV${sel('p-igv',IGV_OPC,p?.igv||'Por confirmar')}</label></div>
@@ -1381,8 +1382,9 @@ function pintarTipoProducto(){
   previewProducto();
 }
 function productoDelForm(){const tipo=$('#p-tipo').value,attrs={};document.querySelectorAll('[data-pa]').forEach(x=>{if(x.value)attrs[x.dataset.pa]=x.value});return {sku:state.dlg.sku||$('#p-sku').value.trim().toUpperCase(),tipo,categoria:$('#p-cat').value,attrs}}
-function previewProducto(){{const bv=$('#p-bv');if(bv){const w=$('#p-fac-w');w.hidden=bv.value!=='manual';const h=num($('#p-huevos').value),pe=num($('#p-peso').value),u=$('#p-uni').value;
-    const t=bv.value==='huevos'&&h>0?`Con un alza de S/ 0,10 por kg en el precio de referencia, este producto sube S/ ${fmt(0.1*h/CONFIG.huevosPorJaba*CONFIG.kgJaba)} por ${u} (${fq(h/CONFIG.huevosPorJaba)} jaba(s) de ${CONFIG.kgJaba} kg de referencia). El peso real no influye.`:bv.value==='peso'&&pe>0?`Con un alza de S/ 0,10 por kg, sube S/ ${fmt(0.1*pe)} por ${u}, según su peso${$('#p-ptipo').value==='certificado'?' certificado':' referencial'}.`:bv.value==='manual'?'Factor fijo: cuántos soles sube por cada S/ 1 por kg del precio de referencia.':'';const gf=(()=>{try{const pf=productoDelForm();return FACTORES.find(x=>matchGrupo(pf,x.grupo))}catch(e){return null}})();$('#p-factxt').textContent=gf?`Este producto sigue el factor por agrupador "${descGrupo(gf.grupo)}" (${gf.factor}), definido en Precios por lista > Factores de variación; ese factor reemplaza esta opción.`:t}}const et=$('#p-eqtxt');if(et){const h=num($('#p-huevos').value),u=$('#p-uni').value;et.textContent=$('#p-mj').checked&&h>0?`1 ${u} = ${fq(h/CONFIG.huevosPorJaba)} jabas (jaba de ${CONFIG.huevosPorJaba} huevos)`:''}
+function previewProducto(){{const fi=$('#p-fac');if(fi){const tipoP=$('#p-tipo').value,esH=tipoP==='Huevo';document.querySelectorAll('.p-solo-huevo').forEach(x=>x.hidden=!esH);document.querySelectorAll('.p-solo-otro').forEach(x=>x.hidden=esH);
+    const gf=(()=>{try{return FACTORES.find(x=>matchGrupo(productoDelForm(),x.grupo))}catch(e){return null}})(),f=num(fi.value),qu=esH?'del huevo':'de la '+tipoP.toLowerCase();
+    $('#p-factxt').textContent=gf?`Este producto usa el factor del agrupador "${descGrupo(gf.grupo)}" (${gf.factor}), que reemplaza este valor.`:f!=null?`Si el precio ${qu} del día sube 10 pts, el precio de lista de este producto sube ${fq(Math.round(10*f*100)/100)} pts.`:'1 = se mueve igual que el precio del día; 0 = no se mueve.'}}const et=$('#p-eqtxt');if(et){const h=num($('#p-huevos').value),u=$('#p-uni').value;et.textContent=$('#p-mj').checked&&h>0?`1 ${u} = ${fq(h/CONFIG.huevosPorJaba)} jaba${h===CONFIG.huevosPorJaba?'':'s'} (jaba de ${CONFIG.huevosPorJaba} huevos)`:''}
   const box=$('#p-prev');if(!box)return;const p=productoDelForm();
   const rs=state.reglas.filter(r=>r.activa&&prodModo(r.alcance)==='grupo'&&matchGrupo(p,r.alcance.grupo));
   box.innerHTML=rs.length?`<p class="banner adv"><b>Por sus atributos, este producto entra en ${rs.length} regla(s) activa(s):</b> ${rs.map(r=>esc(`${r.codigo} (${r.nombre})`)).join(', ')}.</p>`:'<p class="banner info">Por sus atributos no entra en ninguna regla activa por grupo.</p>'}
@@ -1394,11 +1396,10 @@ function guardarProducto(root,fail0){const ir2=k=>{const b=$(`[data-ptab="${k}"]
   const canales=[...root.querySelectorAll('[data-k="p-canales"]:checked')].map(x=>x.value),activo=$('#p-act').checked;
   if(activo&&!canales.length)return fail('Un producto activo debe venderse al menos en un canal.');
   const pf=productoDelForm();if(!pf.categoria)return fail('Elige una categoría.');
-  if($('#p-bv').value==='huevos'&&!(num($('#p-huevos').value)>0))return fail('Para seguir el precio por cantidad de huevos, indica los huevos por unidad de venta.');
-  if($('#p-bv').value==='peso'&&!(num($('#p-peso').value)>0))return fail('Para seguir el precio por peso, indica el peso por unidad.');
-  if($('#p-bv').value==='manual'&&!(num($('#p-fac').value)>0))return fail('Indica el factor manual.');
-  if($('#p-mj').checked&&!(num($('#p-huevos').value)>0))return fail('Para medirlo en jabas, indica cuántos huevos tiene la unidad de venta.');
-  const datos={sku,nombre,tipo:pf.tipo,categoria:pf.categoria,attrs:pf.attrs,unidad:$('#p-uni').value,contenido:$('#p-cont').value.trim(),pesoKg:peso,pesoTipo:$('#p-ptipo').value,baseVar:$('#p-bv').value,huevos:$('#p-huevos').value===''?null:Math.round(num($('#p-huevos').value)),mideJaba:$('#p-mj').checked,factor:$('#p-bv').value==='manual'&&$('#p-fac').value!==''?num($('#p-fac').value):null,codigoSap:$('#p-sap').value.trim(),igv:$('#p-igv').value,canales,activo};
+  if($('#p-tipo').value!=='Huevo'&&$('#p-vp')?.checked&&!(num($('#p-peso').value)>0))return fail('Para vender por peso, indica el peso referencial por unidad (kg).');
+  {const fac=num($('#p-fac').value);if(fac==null||fac<0)return fail('Indica el factor de variación: 1 = se mueve igual que el precio del día, 0 = no se mueve.')}
+  if($('#p-tipo').value==='Huevo'&&$('#p-mj').checked&&!(num($('#p-huevos').value)>0))return fail('Para medirlo en jabas, indica cuántos huevos tiene la unidad de venta.');
+  const datos={sku,nombre,tipo:pf.tipo,categoria:pf.categoria,attrs:pf.attrs,unidad:$('#p-uni').value,contenido:$('#p-cont').value.trim(),pesoKg:peso,mideJaba:$('#p-tipo').value==='Huevo'&&$('#p-mj').checked,pesoTipo:$('#p-ptipo').value,huevos:$('#p-huevos').value===''?null:Math.round(num($('#p-huevos').value)),mideJaba:$('#p-mj').checked,factor:num($('#p-fac').value),ventaPeso:$('#p-tipo').value!=='Huevo'&&!!$('#p-vp')?.checked,codigoSap:$('#p-sap').value.trim(),igv:$('#p-igv').value,canales,activo};
   const rs=state.reglas.filter(r=>r.activa&&prodModo(r.alcance)==='grupo'&&matchGrupo(datos,r.alcance.grupo)).map(r=>r.codigo);
   if(editar){const p=prod(sku);if(p.activo&&!activo&&usoProducto(sku).total&&!confirm(`${sku} tiene precios o reglas asociadas. Si lo desactivas, dejará de poder venderse. ¿Continuar?`))return false;
     Object.assign(p,datos);audit('Editó un producto',`${sku}: ${nombre}.${rs.length?' Entra por atributos en '+rs.join(', ')+'.':''}`);toast('Producto actualizado')}
@@ -1408,12 +1409,12 @@ function guardarProducto(root,fail0){const ir2=k=>{const b=$(`[data-ptab="${k}"]
 
 function abrirCfgJaba(){state.dlg={modo:'cfg'};$('#dlg-t').textContent='Huevos por jaba';$('#dlg-ok').textContent='Guardar';
   const afect=PRODUCTOS.filter(esJaba);
-  $('#dlg-b').innerHTML=`<p class="banner err" id="frm-err" hidden></p><div class="row2"><label class="fld">Huevos por jaba<input type="number" step="1" min="1" id="cf-j" value="${CONFIG.huevosPorJaba}" class="num"></label><label class="fld">Kilos de referencia por jaba<input type="number" step="0.1" min="0" id="cf-kg" value="${CONFIG.kgJaba}" class="num"></label></div><p class="hint">Los kilos de referencia solo convierten el cambio del precio del huevo del día (S/ por kg) a cada presentación. No es el peso real de ningún producto.</p>
+  $('#dlg-b').innerHTML=`<p class="banner err" id="frm-err" hidden></p><label class="fld" style="max-width:220px">Huevos por jaba<input type="number" step="1" min="1" id="cf-j" value="${CONFIG.huevosPorJaba}" class="num"></label>
    <p class="hint">Se usa para convertir cada presentación a jabas en las escalas de volumen. Afecta a ${afect.length} producto(s): ${esc(afect.map(p=>`${p.sku} (${p.huevos} huevos)`).join(', '))}.</p>`;
   abrirDlg()}
 function guardarCfg(root,fail){const n=num($('#cf-j').value);if(!(n>0)||!Number.isInteger(n))return fail('Indica un número entero de huevos.');
   if(n!==CONFIG.huevosPorJaba&&!confirm(`Cambiar de ${CONFIG.huevosPorJaba} a ${n} huevos por jaba cambia el volumen en jabas de las presentaciones y puede mover clientes de banda en las escalas. ¿Continuar?`))return false;
-  const kg=num($('#cf-kg').value);if(!(kg>0))return fail('Indica los kilos de referencia por jaba.');audit('Cambió la jaba de referencia',`Huevos: ${CONFIG.huevosPorJaba} a ${n}; kg de referencia: ${CONFIG.kgJaba} a ${kg}.`);CONFIG.huevosPorJaba=n;CONFIG.kgJaba=kg;toast('Guardado');return true}
+  audit('Cambió la jaba de referencia',`Huevos por jaba: ${CONFIG.huevosPorJaba} a ${n}.`);CONFIG.huevosPorJaba=n;toast('Guardado');return true}
 
 /* ================= Atributos y categorías ================= */
 function usoAtributo(id,valor){const ps=PRODUCTOS.filter(p=>p.attrs?.[id]!=null&&(valor==null||p.attrs[id]===valor));
@@ -1513,36 +1514,36 @@ function renderListas(){
   const top=`<div class="md-top"><div class="seg" role="tablist" aria-label="Secciones de listas">
       <button type="button" data-act="lp-tab" data-t="listas" aria-pressed="${pag==='listas'}">Listas de precios (${ls.length})</button>
       <button type="button" data-act="lp-tab" data-t="factores" aria-pressed="${pag==='factores'}">Factores de variación (${FACTORES.length})</button></div>
-    <div class="acts"><button class="btn sec" data-act="ir" data-v="carga">Carga masiva</button>${puede()?'<button class="btn sec" data-act="var-nueva">Cambiar precio del huevo del día</button><button class="btn primary" data-act="lista-nueva">Nueva lista</button>':''}</div></div>`;
+    <div class="acts"><button class="btn sec" data-act="ir" data-v="carga">Carga masiva</button>${puede()?'<button class="btn sec" data-act="var-nueva">'+lblVar()+'</button><button class="btn primary" data-act="lista-nueva">Nueva lista</button>':''}</div></div>`;
   if(pag==='factores'){C.innerHTML=top+factoresHTML();return}
   // ---- panel izquierdo: listas agrupadas por organización
   const grupos=[...ORGS.map(o=>[o,ls.filter(x=>(x.alcance?.orgs||[]).includes(o))]),['Todas las organizaciones',ls.filter(x=>!(x.alcance?.orgs||[]).length)]].filter(([,xs])=>xs.length);
-  const item=x=>{const ih=x.origen==='SAP'?null:indiceLista(x,'Huevo',ahoraLocal()),desf=x.origen!=='SAP'&&idxDesfasado(x,'Huevo');
+  const item=x=>{const ih=x.origen==='SAP'?null:indiceLista(x,TV(),ahoraLocal()),desf=x.origen!=='SAP'&&idxDesfasado(x,TV());
     return `<button type="button" class="li-item${x.id===state.listaSel?' on':''}${x.activa?'':' off'}" data-act="ver-lista" data-id="${x.id}">
       <span class="li-main"><span class="li-cod">${esc(x.codigo)}${x.origen==='SAP'?' '+chip('SAP VK11','gris'):''}</span>
       <span class="li-nom">${esc(x.nombre)}</span><span class="li-alc">${esc(DIMS.flatMap(([k])=>x.alcance?.[k]||[]).concat((x.alcance?.canalesPedido||[]).map(c=>'Pedido por '+c)).join(', ')||'Todos los clientes')}</span></span>
-      <span class="li-idx">${x.origen==='SAP'?'<span class="nota">Precio fijo</span>':ih?`<b class="num">${fmt(ih.v)}</b><span class="nota">${ih.t.slice(0,10)===h?'hoy '+ih.t.slice(11):fFecha(ih.t)}</span>${desf?'<span class="li-warn" title="No recibió la última variación del día">Desfasada</span>':''}`:'<span class="nota">Sin índice</span>'}</span></button>`};
-  const izq=`<aside class="md-left card" aria-label="Listas de precios"><div class="md-left-h"><span>Lista</span><span>Índice huevo</span></div>
+      <span class="li-idx">${x.origen==='SAP'?'<span class="nota">Precio fijo</span>':ih?`<b class="num">${fPts(ih.v)}</b><span class="nota">${ih.t.slice(0,10)===h?'hoy '+ih.t.slice(11):fFecha(ih.t)}</span>${desf?'<span class="li-warn" title="No recibió la última variación del día">Desfasada</span>':''}`:'<span class="nota">0 pts</span>'}</span></button>`};
+  const izq=`<aside class="md-left card" aria-label="Listas de precios"><div class="md-left-h"><span>Lista</span><span>Variación ${TV()==='Gallina'?'gallina':'huevo'} hoy</span></div>
     ${grupos.map(([g,xs])=>`<p class="li-grp">${esc(g)}</p>${xs.sort((a,b)=>(a.prioridad||0)-(b.prioridad||0)).map(item).join('')}`).join('')}</aside>`;
   // ---- panel derecho: detalle de la lista seleccionada
   let der='<section class="card"><div class="vacio">Crea una lista para empezar.</div></section>';
   if(r){const v=versionVigente(r,h),ant=v?versionAnterior(r,v):null,p=versionProxima(r,h),band=bandaDe(r),sap=r.origen==='SAP',tab=state.listaTab||'precios';
     const nIdx=TIPOS_IDX.reduce((n,t)=>n+(r.indice?.[t]||[]).length,0),nVer=(r.versiones||[]).length;
     const kpi=(k,val,sub)=>`<div class="mini"><p class="k">${k}</p><p class="v num">${val}</p><p class="s">${sub||''}</p></div>`;
-    const ixK=t=>{if(sap)return kpi(`Índice ${t.toLowerCase()}`,'—','Precio fijo de SAP');const a=indiceLista(r,t,ahoraLocal()),ref=v?.indiceRef?.[t];if(!a)return kpi(`Índice ${t.toLowerCase()}`,'—','Sin índice');
-      const d=ref!=null?a.v-ref:0;return kpi(`Índice ${t.toLowerCase()} (S/ por kg)`,fmt(a.v),`${a.t.slice(0,10)===h?'hoy '+a.t.slice(11):fFecha(a.t)}${ref!=null&&Math.abs(d)>1e-9?`, ${d>0?'+':'−'}${fmt(Math.abs(d))} vs. corte`:''}${idxDesfasado(r,t)?' '+chip('Desfasada','adv'):''}`)};
-    const precios=`<p class="hint" style="margin:0 0 10px">${sap?'Precios leídos de SAP (VK11). No se modifican desde el motor.':'Precio actual = precio de corte + factor del SKU × (índice ahora − índice del corte). La banda indica cuántos puntos (1 pt = S/ 0.01) puede bajar o subir el vendedor al negociar sobre el precio calculado. Para cambiar precios o bandas usa <b>Cambiar precios</b>.'}</p>
+    const ixK=t=>{const nm=`Variación ${t==='Gallina'?'gallina':'huevo'} desde el corte`;if(sap)return kpi(nm,'—','Precio fijo de SAP');const a=indiceLista(r,t,ahoraLocal());if(!a)return kpi(nm,'0 pts','Sin cambios desde el corte');
+      return kpi(nm,fPts(a.v),`Último cambio ${a.t.slice(0,10)===h?'hoy '+a.t.slice(11):fFecha(a.t)}${idxDesfasado(r,t)?' '+chip('Desfasada','adv'):''}`)};
+    const precios=`<p class="hint" style="margin:0 0 10px">${sap?'Precios leídos de SAP (VK11). No se modifican desde el motor.':'Precio actual = precio de corte + factor del SKU × variación del día (puntos desde el corte). La banda indica cuántos puntos (1 pt = S/ 0.01) puede bajar o subir el vendedor al negociar sobre el precio calculado. Para cambiar precios o bandas usa <b>Cambiar precios</b>.'}</p>
       <div class="scroll"><table class="t"><thead><tr><th>Producto</th><th class="r">Precio de corte</th>${sap?'':'<th class="r">Precio actual</th>'}<th>Banda (pts)</th><th class="r">Rango negociable ahora</th>${p?`<th class="r">Desde ${fFecha(p.desde).slice(0,5)}</th>`:''}</tr></thead><tbody>
       ${PRODUCTOS.filter(pr=>(pr.activo||v?.precios?.[pr.sku]!=null)&&veTipo(pr.tipo)).map(pr=>{const pv=v?.precios?.[pr.sku],pa=ant?.precios?.[pr.sku],pp=p?.precios?.[pr.sku],b=band?.[pr.sku];
         const fuera=false;
-        const actual=(()=>{if(pv==null)return '—';const ref=v?.indiceRef?.[pr.tipo],ix=indiceLista(r,pr.tipo,ahoraLocal());if(ref==null||!ix)return money(pv);const d=(ix.v-ref)*factorDe(pr).v;return `<b>${money(pv+d)}</b>`+(Math.abs(d)>0.004?`<span class="sub">${d>0?'+':'−'}S/ ${fmt(Math.abs(d))} por índice</span>`:'')})();
-        return `<tr><td style="min-width:170px"><b>${esc(pr.nombre)}</b>${pr.activo?'':' '+chip('Inactivo','gris')}<span class="sub">${esc(pr.sku)}, por ${esc(pr.unidad)}</span></td>
+        const actual=(()=>{if(pv==null)return '—';const d=varSku(r,pr,ahoraLocal());return `<b>${money(pv+d)}</b>`+(Math.abs(d)>0.004?`<span class="sub">${d>0?'+':'−'}S/ ${fmt(Math.abs(d))} por variación del día</span>`:'')})();
+        return `<tr><td style="min-width:170px"><b>${esc(pr.nombre)}</b>${pr.activo?'':' '+chip('Inactivo','gris')}<span class="sub">${esc(pr.sku)}, ${porPeso(pr)?'precio por kg (se factura con peso real)':'por '+esc(pr.unidad)}</span></td>
           <td class="r">${pv!=null?money(pv):'<span class="nota">No se vende</span>'}${pa!=null&&pv!=null?`<span class="sub">antes ${money(pa)}, ${fmtPct((pv-pa)/pa*100)}</span>`:''}${fuera?'<span class="sub">'+chip('Fuera de banda','adv')+'</span>':''}</td>${sap?'':`<td class="r">${actual}</td>`}
-          <td class="num" style="white-space:nowrap">${(()=>{const bb=bandaLista(r,pr.sku);return bb?`−${bb.abajo??'∞'} / +${bb.arriba??'∞'}${bb.propia?'<span class="sub">propia del SKU</span>':'<span class="sub">de la lista</span>'}`:'Sin banda'})()}</td><td class="r" style="white-space:nowrap">${(()=>{const bb=bandaLista(r,pr.sku);if(!bb||pv==null)return '—';const ref=v?.indiceRef?.[pr.tipo],ix=indiceLista(r,pr.tipo,ahoraLocal()),a=pv+((ref!=null&&ix)?(ix.v-ref)*factorDe(pr).v:0);return `${bb.abajo!=null?fmt(a-bb.abajo/100):'—'} / ${bb.arriba!=null?fmt(a+bb.arriba/100):'—'}`})()}</td>${p?`<td class="r">${pp!=null?money(pp):'—'}</td>`:''}</tr>`}).join('')}
+          <td class="num" style="white-space:nowrap">${(()=>{const bb=bandaLista(r,pr.sku);return bb?`−${bb.abajo??'∞'} / +${bb.arriba??'∞'}${bb.propia?'<span class="sub">propia del SKU</span>':'<span class="sub">de la lista</span>'}`:'Sin banda'})()}</td><td class="r" style="white-space:nowrap">${(()=>{const bb=bandaLista(r,pr.sku);if(!bb||pv==null)return '—';const a=pv+varSku(r,pr,ahoraLocal());return `${bb.abajo!=null?fmt(a-bb.abajo/100):'—'} / ${bb.arriba!=null?fmt(a+bb.arriba/100):'—'}`})()}</td>${p?`<td class="r">${pp!=null?money(pp):'—'}</td>`:''}</tr>`}).join('')}
       </tbody></table></div>`;
-    const indice=sap?'<p class="nota">Las listas de SAP no tienen índice: su precio es fijo.</p>':`<p class="hint" style="margin:0 0 10px">Cada variación mueve los precios de esta lista sin crear una versión nueva. Se registra desde <b>Cambiar precio del huevo del día</b>, para una o varias listas a la vez.</p>
-      <div class="scroll"><table class="t"><thead><tr><th>Desde</th><th>Tipo</th><th class="r">Valor (S/ por kg)</th><th class="r">Cambio</th><th>Comentario</th><th>Estado</th></tr></thead><tbody>
-      ${TIPOS_IDX.flatMap(t=>{const xs=[...(r.indice?.[t]||[])].sort((a,b)=>a.t<b.t?-1:1),act=indiceLista(r,t,ahoraLocal());return xs.map((x,i)=>({t,x,prev:xs[i-1],act}))}).sort((a,b)=>a.x.t<b.x.t?1:-1).map(({t,x,prev,act})=>`<tr><td class="num" style="white-space:nowrap">${fFecha(x.t)} ${x.t.slice(11)}</td><td>${t}</td><td class="r">${fmt(x.v)}</td><td class="r">${prev?(x.v>=prev.v?'+':'−')+fmt(Math.abs(x.v-prev.v)):''}</td><td>${esc(x.com||'')}<span class="sub">${esc(x.rol||'')}</span></td><td>${x===act?chip('Vigente','ok'):x.t>ahoraLocal()?chip('Programado','prog'):chip('Histórico','gris')}</td></tr>`).join('')||'<tr><td colspan="6" class="nota">Sin índice registrado.</td></tr>'}
+    const indice=sap?'<p class="nota">Las listas de SAP no reciben la variación del día: su precio es fijo.</p>':`<p class="hint" style="margin:0 0 10px">Cada variación mueve los precios de esta lista sin crear una versión nueva. Se registra desde <b>Cambiar precio del día</b>, para una o varias listas a la vez.</p>
+      <div class="scroll"><table class="t"><thead><tr><th>Desde</th><th>Tipo</th><th class="r">Variación</th><th class="r">Acumulado</th><th>Comentario</th><th>Estado</th></tr></thead><tbody>
+      ${(()=>{const now=ahoraLocal(),vv=versionVigente(r,now),ini=vv?tVer(vv.desde):'';return TIPOS_IDX.flatMap(t=>{const xs=[...(r.indice?.[t]||[])].filter(x=>x.d!=null).sort((a,b)=>a.t<b.t?-1:1);let acc=0,cini=null;return xs.map(x=>{const c=versionVigente(r,x.t);const ci=c?tVer(c.desde):'';if(ci!==cini){acc=0;cini=ci}acc+=x.d;return {t,x,acc}})}).sort((a,b)=>a.x.t<b.x.t?1:-1).map(({t,x,acc})=>`<tr><td class="num" style="white-space:nowrap">${fFecha(x.t)} ${x.t.slice(11)}</td><td>${t}</td><td class="r">${fPts(x.d)}</td><td class="r">${fPts(acc)}</td><td>${esc(x.com||'')}<span class="sub">${esc(x.rol||'')}</span></td><td>${x.t>now?chip('Programado','prog'):x.t>=ini?chip('Vigente','ok'):chip('Ya incluido en un corte','gris')}</td></tr>`).join('')})()||'<tr><td colspan="6" class="nota">Sin variaciones registradas.</td></tr>'}
       </tbody></table></div>`;
     const todasV=[...(r.versiones||[])].sort((a,b)=>tVer(a.desde)<tVer(b.desde)?1:tVer(a.desde)>tVer(b.desde)?-1:b.v-a.v);
     const verTodo=state.verTodo?.[r.id],mesF=state.verMes?.[r.id]||'';
@@ -1552,7 +1553,7 @@ function renderListas(){
     const tarjetaV=x=>{const [t,c]=estadoVersion(r,x),ant=versionAnterior(r,x),cambios=Object.keys(x.precios||{}).filter(k=>ant?.precios?.[k]!==x.precios[k]);
         return `<li class="tl-it ${c}"><span class="tl-dot" aria-hidden="true"></span><div class="tl-box"><div class="tl-top"><b>${nomVer(x,r)}</b>${chip(t,c)}<span class="tl-f">N.º ${x.v}</span></div>
           <p class="tl-d">${esc(x.comentario||'Sin comentario')}</p>
-          <p class="tl-m">${esc(x.origen)}. Registrado el ${fFechaHora(x.registrado)} por ${esc(x.rol)}.${x.indiceRef?` Precio del huevo al fijarlo: S/ ${fmt(x.indiceRef.Huevo??0)} por kg.`:''}</p>
+          <p class="tl-m">${esc(x.origen)}. Registrado el ${fFechaHora(x.registrado)} por ${esc(x.rol)}.</p>
           <details class="tl-det"><summary>${ant?`${cambios.length} precio(s) cambiaron frente al corte anterior`:`${Object.keys(x.precios||{}).length} precio(s) cargados`}</summary><table class="t"><thead><tr><th>Producto</th><th class="r">Antes</th><th class="r">Este corte</th></tr></thead><tbody>
           ${Object.entries(x.precios||{}).map(([k,v2])=>`<tr><td>${esc(pNom(k))}</td><td class="r">${ant?.precios?.[k]!=null?money(ant.precios[k]):'—'}</td><td class="r"><b>${money(v2)}</b>${ant?.precios?.[k]!=null&&ant.precios[k]!==v2?`<span class="sub">${fmtPct((v2-ant.precios[k])/ant.precios[k]*100)}</span>`:''}</td></tr>`).join('')}</tbody></table></details></div></li>`};
     const cmp=state.verCmp?.[r.id]||{a:todasV[Math.min(todasV.length-1,3)]?.desde.slice(0,10)||hoy(),b:hoy()};
@@ -1571,14 +1572,14 @@ function renderListas(){
         <div class="acts">${!permisoLista(r)&&puede()&&!sap?`<span class="tag lock" title="Esta lista aplica a canales fuera de tu permiso">${ic('candado')}Solo lectura</span>`:''}${permisoLista(r)?`<button class="btn primary" data-act="nueva-version" data-id="${r.id}">Cambiar precios</button>`:''}${permisoLista(r)?`<button class="btn sec" data-act="lista-alcance" data-id="${r.id}">Editar a quién aplica</button>`:''}</div></div>
       ${sap?`<p class="banner info" style="margin:14px 18px 0"><b>Precios fijos gestionados en SAP (VK11).</b> El motor solo los lee; última sincronización ${fFecha(r.sapSync)} ${String(r.sapSync||'').slice(11)}. No admiten índice, ajustes, promociones ni rebajas.</p>`:''}
       <div class="minis">${kpi('Precios vigentes desde',v?fFecha(v.desde):'—',v?(v.desde.length>10?'a las '+v.desde.slice(11):esc(v.comentario||'')):'Sin precios')}${kpi('Próximo cambio',p?fFecha(p.desde):'Ninguno',p?esc(p.comentario||''):'')}${ixK('Huevo')}${ixK('Gallina')}</div>
-      <div class="tabs-in" role="tablist">${[['precios','Precios'],['indice',`Índice (${nIdx})`],['versiones',`Historial de cortes (${nVer})`]].map(([k,t])=>`<button type="button" role="tab" data-act="lt-tab" data-t="${k}" aria-selected="${tab===k}">${t}</button>`).join('')}</div>
+      <div class="tabs-in" role="tablist">${[['precios','Precios'],['indice',`Variación del día (${nIdx})`],['versiones',`Historial de cortes (${nVer})`]].map(([k,t])=>`<button type="button" role="tab" data-act="lt-tab" data-t="${k}" aria-selected="${tab===k}">${t}</button>`).join('')}</div>
       <div class="card-b">${tab==='indice'?indice:tab==='versiones'?versiones:precios}</div></section>`}
   C.innerHTML=top+`<div class="md">${izq}${der}</div>`;
 }
 function idxDesfasado(r,t){const a=indiceLista(r,t,ahoraLocal());if(!a)return false;
   const ult=Math.max(...listas().filter(x=>x.activa&&x.origen!=='SAP').map(x=>{const y=indiceLista(x,t,ahoraLocal());return y&&y.t.slice(0,10)===hoy()?Date.parse(y.t):0}));
   return ult>0&&Date.parse(a.t)<ult}
-function factoresHTML(){return `<section class="card"><div class="card-h"><div><h2>Factores de variación por agrupador</h2><p>Cuánto se mueve cada SKU por cada S/ 1 que varía el índice de su lista. Reemplazan el factor del maestro; gana el primero que coincida.</p></div>${puede()?'<button class="btn primary" data-act="fac-nuevo">Nuevo factor</button>':''}</div>
+function factoresHTML(){return `<section class="card"><div class="card-h"><div><h2>Factores de variación por agrupador</h2><p>Cuántos puntos se mueve el precio de lista de cada SKU por cada punto que varía el precio del día. Reemplazan el factor del producto; gana el primero que coincida.</p></div>${puede()?'<button class="btn primary" data-act="fac-nuevo">Nuevo factor</button>':''}</div>
    <div class="scroll"><table class="t"><thead><tr><th>Orden</th><th>Grupo</th><th class="r">Factor</th><th>Nota</th><th>SKU afectados</th><th></th></tr></thead><tbody>
    ${FACTORES.map((f,i)=>`<tr><td>${i+1}</td><td>${esc(descGrupo(f.grupo))}</td><td class="r">${f.factor}</td><td>${esc(f.nota||'')}</td><td>${esc(PRODUCTOS.filter(p=>matchGrupo(p,f.grupo)).map(p=>p.sku).join(', ')||'Ninguno')}</td>
      <td style="white-space:nowrap">${puede()?`<button class="btn link" data-act="fac-ed" data-id="${f.id}">Editar</button><button class="btn danger" data-act="fac-del" data-id="${f.id}">Eliminar</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="nota">Sin agrupadores: todos los SKU usan el factor del maestro.</td></tr>'}
@@ -1602,9 +1603,7 @@ function abrirListaNueva(){
    <div class="row2" style="margin-top:14px"><label class="fld">Vigente desde<input type="date" id="ln-desde" value="${hoy()}"></label><span></span></div>
    <p class="sep">4. Margen de negociación del vendedor (puntos)</p><p class="hint" style="margin:0 0 8px">Cuántos puntos (1 pt = S/ 0,01) puede bajar o subir el vendedor sobre el precio calculado. Es el valor por defecto para todos los productos de esta lista; después puedes cambiarlo producto por producto en "Cambiar precios".</p>
    <div class="row2"><label class="fld">Baja máx. (pts)<input type="number" step="1" min="0" id="ln-ab" value="50" class="num"></label><label class="fld">Sube máx. (pts)<input type="number" step="1" min="0" id="ln-ar" value="30" class="num"></label></div>
-   <p class="sep">5. Índice inicial (S/ por kg)</p><p class="hint" style="margin:0 0 8px">Desde aquí se medirán las variaciones de esta lista. Se propone el índice actual de la lista general.</p>
-   <div class="row2">${TIPOS_IDX.map(t=>`<label class="fld">Índice ${t.toLowerCase()}<input type="number" step="0.01" min="0" data-lni="${t}" value="${indiceLista(listaGeneral(),t,ahoraLocal())?.v??''}" class="num"></label>`).join('')}</div>
-   <label class="fld">Comentario (obligatorio)<textarea id="ln-com" placeholder="Ej. Nueva zona de reparto"></textarea></label>`;
+   <p class="hint">La variación del día se suma a estos precios con <b>Cambiar precio del día</b>; cada corte nuevo la vuelve a cero.</p><label class="fld">Comentario (obligatorio)<textarea id="ln-com" placeholder="Ej. Nueva zona de reparto"></textarea></label>`;
   abrirDlg();
 }
 function guardarListaNueva(root,fail){
@@ -1617,7 +1616,6 @@ function guardarListaNueva(root,fail){
   const ch=k=>[...root.querySelectorAll(`[data-k="${k}"]:checked`)].map(x=>x.value);
   {const cu=canalesUsr();const alc0=Object.fromEntries(['sedes','orgs','canales'].map(k=>[k,ch('ln-'+k)]));if(cu&&canalesDeAlcance(alc0).some(c=>!cu.includes(c)))return fail(`La lista aplicaría a canales fuera de tu permiso. Indica la organización o el canal (tu permiso: ${txtPermiso()}).`)}
   const r={id:'R'+Date.now(),codigo:cod,nombre:nom,tipo:'lista',activa:true,prioridad:num($('#ln-prio').value)??5,alcance:{...Object.fromEntries(['sedes','orgs','canales'].map(k=>[k,ch('ln-'+k)])),canalesPedido:ch('ln-canalesPedido')},params:{},versiones:[],indice:{},banda:{abajo:$('#ln-ab').value===''?null:num($('#ln-ab').value),arriba:$('#ln-ar').value===''?null:num($('#ln-ar').value)},bandaSku:{}};
-  root.querySelectorAll('[data-lni]').forEach(e=>{const n=num(e.value);if(n!=null&&n>0)r.indice[e.dataset.lni]=[{t:desde+'T00:00',v:n,rol:quien(),com:'Índice inicial'}]});
   state.reglas.push(r);crearVersion(r,precios,desde,'Creación de la lista',com);state.listaSel=r.id;
   audit('Creó una lista de precios',`${cod}: ${nom}, ${Object.keys(precios).length} precio(s) vigentes desde ${fFecha(desde)}.`);toast('Lista creada con su versión 1');return true}
 function abrirVersion(id){
@@ -1639,7 +1637,7 @@ function resumenParams(r){
   const p=r.params||{},precios=o=>Object.entries(o||{}).map(([s,v])=>`${pNom(s)} S/ ${fmt(v)}`).join('; ');
   if(r.tipo==='lista'){const v=versionVigente(r,hoy()),n=versionProxima(r,hoy());return `${v?`Precios vigentes desde ${fFecha(v.desde)}`:'Sin precios vigentes'}${n?`; próximo cambio el ${fFecha(n.desde)}`:''}`}
   if(r.tipo==='escalas'){const ag=p.agrupar||'sku',vtx=b=>p.porZona?CLASES_ZONA.map(z=>`${z.toLowerCase()} ${b.vz?.[z]!=null?fmt(b.vz[z]):'—'}`).join(' / '):fmt(b.valor);return (ag!=='sku'?`Por ${ag==='cat'?'categoría':'agrupador'}${p.porZona?', casco y periferia':''}. `:'')+Object.entries(p.tabla||{}).map(([s,bs])=>{const pr=ag==='sku'&&s!=='*'?prod(s):null,pa=pr?pasoMed(pr):0.5;return `${grpLabel(s)}: `+[...bs].sort((a,b)=>a.desde-b.desde).map((b,i,a)=>`${rango(a,i,pa)} ${pr&&!esJaba(pr)?medTxt(pr,2):'jabas'} ${p.porZona?(p.modo==='precio'?'S/ ':p.modo==='descuento_pct'?'−% ':'−pts '):''}${p.porZona?vtx(b):valBanda(p.modo,b.valor)}`).join(', ')}).join(' | ')}
-  const m={ajuste_base:()=>p.modo==='precio'?'Precio fijo: '+precios(p.precios):p.modo==='indice'?`${num(p.valor)>0?'+':'−'}S/ ${fmt(Math.abs(num(p.valor)||0))} por kg del índice × factor`:(p.modo==='pct'?`${num(p.valor)>0?'+':'−'}${Math.abs(num(p.valor)||0)}%`:`${num(p.valor)>0?'+':'−'}${fq(Math.abs(num(p.valor)||0))} pts por unidad`),pactado:()=>precios(p.precios),especial:()=>precios(p.precios),cotizacion:()=>`${pNom(p.sku)}: índice × ${p.factor} kg + S/ ${fmt(p.brecha)}`,
+  const m={ajuste_base:()=>p.modo==='precio'?'Precio fijo: '+precios(p.precios):p.modo==='indice'?`${fPts(num(p.valor)||0)} × factor`:(p.modo==='pct'?`${num(p.valor)>0?'+':'−'}${Math.abs(num(p.valor)||0)}%`:`${num(p.valor)>0?'+':'−'}${fq(Math.abs(num(p.valor)||0))} pts por unidad`),pactado:()=>precios(p.precios),especial:()=>precios(p.precios),cotizacion:()=>`${pNom(p.sku)}: índice × ${p.factor} kg + S/ ${fmt(p.brecha)}`,
     pct:()=>desc(p).txt+(desc(p).u==='pct'?'':' por unidad'),monto:()=>`−S/ ${fmt(p.monto)} por unidad`,pedido_pct:()=>desc(p).txt+(desc(p).u==='pct'?' sobre el subtotal':' por unidad'),lleva:()=>`${pNom(p.sku)}: lleva ${p.x}, paga ${p.y}`,
     regalo:()=>`Desde ${p.minimo} unidades: ${p.cantidad} × ${pNom(p.skuRegalo)}`,combo:()=>(p.componentes||[]).map(c=>`${c.cant} × ${pNom(c.sku)}`).join(' + ')+((p.modo||(p.precio!=null?'precio':'pts'))==='precio'?` a S/ ${fmt(p.valor??p.precio)}`:(p.modo==='pct'?` con −${p.valor}%`:` con −${fq(num(p.valor)||0)} pts por pack`)),
     mezcla:()=>`${p.minimo} productos distintos: ${desc(p).txt}`,recargo:()=>`S/ ${fmt(p.monto)} si el subtotal es menor a S/ ${fmt(p.umbral)}`,
@@ -1647,11 +1645,11 @@ function resumenParams(r){
     autonomia:()=>`Hasta ${p.max} pts sin aprobación, en pasos de ${p.paso} pts`,recargo:()=>`${p.concepto||'Recargo'}: S/ ${fmt(p.monto)}${p.por==='jaba'?' por jaba':' por pedido'}${(p.cuando||'debajo')==='siempre'?', siempre':` si el pedido es menor a S/ ${fmt(p.umbral)}`}`,minimo:()=>`Mínimo ${p.medida==='soles'?'S/ '+fmt(p.minimo):fq(num(p.minimo)||0)+' jabas'}`,beneficio:()=>`${p.beneficio} desde S/ ${fmt(p.minimo)}`,contado:()=>`−${p.pct}% para pago al contado`};
   return m[r.tipo]?m[r.tipo]():'';
 }
-const TDESC_CORTA={lista:'Precio de corte por producto, con versiones e índice.',cotizacion:'Precio calculado desde la cotización MINAGRI: índice × kilos + brecha.',ajuste_base:'Baja o sube unos puntos el precio de la lista solo en una zona, módulo o canal.',pactado:'Precio acordado con un cliente o segmento.',pct:'Descuento en puntos o en % por unidad.',monto:'Monto fijo menos por unidad.',especial:'Precio temporal por producto.',escalas:'Precio o descuento por jabas compradas, por grupo y zona.',lleva:'Por cada X unidades, se cobran Y.',regalo:'Producto sin costo al alcanzar una cantidad.',combo:'Productos que se venden juntos con un pequeño descuento.',mezcla:'Descuento (puntos o %) por comprar varios productos distintos.',pedido_pct:'Descuento (puntos o %) al pedido; útil por canal.',recargo:'Cobro por despacho, por pedido o por jaba; siempre o bajo un mínimo.',minimo:'Bloquea pedidos que no llegan a un mínimo de jabas o soles.',pisotecho:'Límite del precio final por producto.',dmax:'Tope del descuento acumulado.',autonomia:'Cuánto rebaja el vendedor sin aprobación.',beneficio:'Flete, plazo u otra condición sin cambiar el precio.',contado:'Descuento por pago al contado.'};
+const TDESC_CORTA={lista:'Precio de corte por producto, con versiones y variación del día.',cotizacion:'Precio calculado desde la cotización MINAGRI: índice × kilos + brecha.',ajuste_base:'Baja o sube unos puntos el precio de la lista solo en una zona, módulo o canal.',pactado:'Precio acordado con un cliente o segmento.',pct:'Descuento en puntos o en % por unidad.',monto:'Monto fijo menos por unidad.',especial:'Precio temporal por producto.',escalas:'Precio o descuento por jabas compradas, por grupo y zona.',lleva:'Por cada X unidades, se cobran Y.',regalo:'Producto sin costo al alcanzar una cantidad.',combo:'Productos que se venden juntos con un pequeño descuento.',mezcla:'Descuento (puntos o %) por comprar varios productos distintos.',pedido_pct:'Descuento (puntos o %) al pedido; útil por canal.',recargo:'Cobro por despacho, por pedido o por jaba; siempre o bajo un mínimo.',minimo:'Bloquea pedidos que no llegan a un mínimo de jabas o soles.',pisotecho:'Límite del precio final por producto.',dmax:'Tope del descuento acumulado.',autonomia:'Cuánto rebaja el vendedor sin aprobación.',beneficio:'Flete, plazo u otra condición sin cambiar el precio.',contado:'Descuento por pago al contado.'};
 function estadoRegla(r){const h=hoy();if(!r.activa)return ['Inactiva','gris'];if(r.hasta&&r.hasta<h)return ['Vencida','err'];if(r.desde&&r.desde>h)return ['Programada','prog'];return ['Vigente','ok']}
 const TICON={lista:'listas',cotizacion:'indice',ajuste_base:'reglas',pactado:'clientes',pct:'pct',monto:'pct',especial:'tag',escalas:'escala',lleva:'regalo',regalo:'regalo',combo:'m-modulos',mezcla:'mezcla',pedido_pct:'carrito',recargo:'mas',minimo:'carrito',pisotecho:'escudo',dmax:'escudo',autonomia:'clientes',beneficio:'estrella',contado:'pct'};
 function renderReglas(){state.rf=state.rf||{q:'',capa:'',est:'actuales',tipo:''};if(!state.rf.est||['0','1'].includes(state.rf.est))state.rf.est='actuales';const f=state.rf;if(f.tipo&&!veTipo(f.tipo))f.tipo='';
-  C.innerHTML=(puede()&&!sinRestriccion()?`<p class="banner info">${ic('candado')} <b>Tu permiso:</b> ${esc(txtPermiso())}. Las reglas fuera de ese alcance se ven, pero no se editan.</p>`:'')+pgHead('reglas','Reglas y promociones','Las reglas son datos: se crean, activan y ordenan sin modificar el motor. Se evalúan por capas, de arriba hacia abajo.',puede()?`${puedeAdmin()?(state.reglas.some(r=>r.tipo!=='lista'&&seed().some(x=>x.id===r.id))?'<button class="btn sec" data-act="quitar-ejemplos">Quitar ejemplos</button>':'<button class="btn sec" data-act="ejemplos">Cargar ejemplos</button>'):''}<button class="btn primary" data-act="regla-nueva">${ic('mas')}Nueva promoción</button>`:'')+
+  C.innerHTML=(puede()&&!sinRestriccion()?`<p class="banner info">${ic('candado')} <b>Tu permiso:</b> ${esc(txtPermiso())}. Las reglas fuera de ese alcance se ven, pero no se editan.</p>`:'')+pgHead('reglas','Reglas y promociones','Las reglas son datos: se crean, activan y ordenan sin modificar el motor. Se evalúan por capas, de arriba hacia abajo.',puede()?`<button class="btn primary" data-act="regla-nueva">${ic('mas')}Nueva promoción</button>`:'')+
    (puede()?'':'<p class="banner info">Tu rol puede consultar las reglas y usar el simulador. Solo Analista de precios crea, edita o activa reglas.</p>')+
    `<div class="card"><div class="toolbar"><label class="tb-q">${ic('buscar')}<input type="search" data-rf="q" value="${esc(f.q)}" placeholder="Buscar por nombre o código" aria-label="Buscar regla"></label>
      <select data-rf="capa" aria-label="Capa"><option value="">Todas las capas</option>${CAPAS.map(c=>`<option value="${c.id}"${String(c.id)===f.capa?' selected':''}>${c.id}. ${esc(c.nombre)}</option>`).join('')}</select>
@@ -1662,12 +1660,12 @@ function renderReglas(){state.rf=state.rf||{q:'',capa:'',est:'actuales',tipo:''}
 function renderReglasCards(){const f=state.rf,q=normH(f.q||'');let h='';
   const ok=r=>{const ts=tiposDeRegla(r)||[];return (!q||normH((r.codigo||'')+' '+r.nombre).includes(q))&&(()=>{const e=estadoRegla(r)[0];return f.est==='todas'||(f.est==='actuales'?['Vigente','Programada'].includes(e):e===f.est)})()&&(!f.tipo||ts.includes(f.tipo))&&ts.some(veTipo)};
   for(const c of CAPAS){if(f.capa&&String(c.id)!==f.capa)continue;const rs=state.reglas.filter(r=>r.tipo!=='lista'&&TIPOS[r.tipo]?.capa===c.id&&ok(r)).sort((a,b)=>(a.prioridad||0)-(b.prioridad||0));const nl=c.id===1?listas().length:0;if(!rs.length&&!nl)continue;
-    h+=`<section class="capa-sec"><div class="capa-h">${capaTag(c.id)}<h3>${esc(c.nombre)}</h3><span class="nota">${MODOS[c.modo]}</span><span class="capa-n">${rs.length+nl}</span></div><div class="cards">${nl?`<button type="button" class="rc rc-link" data-act="ir" data-v="listas"><span class="rc-ic" style="--cc:var(--c1)">${ic('listas')}</span><span><b>${nl} listas de precios</b><span class="nota">Se gestionan en Listas de precios, con versiones, índice y bandas.</span></span></button>`:''}${rs.map(cardRegla).join('')}</div></section>`}
+    h+=`<section class="capa-sec"><div class="capa-h">${capaTag(c.id)}<h3>${esc(c.nombre)}</h3><span class="nota">${MODOS[c.modo]}</span><span class="capa-n">${rs.length+nl}</span></div><div class="cards">${nl?`<button type="button" class="rc rc-link" data-act="ir" data-v="listas"><span class="rc-ic" style="--cc:var(--c1)">${ic('listas')}</span><span><b>${nl} listas de precios</b><span class="nota">Se gestionan en Listas de precios, con versiones, variación del día y bandas.</span></span></button>`:''}${rs.map(cardRegla).join('')}</div></section>`}
   const orf=state.reglas.filter(r=>!TIPOS[r.tipo]&&ok(r));if(orf.length&&!f.capa)h+=`<section class="capa-sec"><div class="capa-h"><h3>Tipo no registrado</h3><span class="nota">El motor las omite sin fallar.</span></div><div class="cards">${orf.map(cardRegla).join('')}</div></section>`;
   const ocultas=f.est==='actuales'?state.reglas.filter(r=>r.tipo!=='lista'&&['Vencida','Inactiva'].includes(estadoRegla(r)[0])).length:0;
   if(ocultas)h+=`<p class="nota" style="text-align:center">${ocultas} promoción(es) vencida(s) o desactivada(s) no se muestran. <button type="button" class="btn link" style="padding:0" data-act="ver-ocultas">Verlas</button></p>`;
   const sinPromos=!state.reglas.some(r=>r.tipo!=='lista');
-  if(sinPromos)h+=`<div class="vacio-grande"><span class="pg-ic">${ic('reglas')}</span><h3>Aún no hay promociones ni descuentos</h3><p>El precio sale solo de las listas. Cuando necesites un descuento, una escala por volumen o un regalo, créalo aquí.</p>${puede()?`<button class="btn primary" data-act="regla-nueva">${ic('mas')}Crear la primera promoción</button>`:''}${puedeAdmin()?'<button class="btn link" data-act="ejemplos">o cargar ejemplos para conocer el sistema</button>':''}</div>`;
+  if(sinPromos)h+=`<div class="vacio-grande"><span class="pg-ic">${ic('reglas')}</span><h3>Aún no hay promociones ni descuentos</h3><p>El precio sale solo de las listas. Cuando necesites un descuento, una escala por volumen o un regalo, créalo aquí.</p>${puede()?`<button class="btn primary" data-act="regla-nueva">${ic('mas')}Crear la primera promoción</button>`:''}</div>`;
   $('#reglas-cards').innerHTML=h||'<div class="card"><div class="vacio">Ninguna regla coincide con la búsqueda.</div></div>'}
 function cardRegla(r){const pr=permisoRegla(r),ed=puede()&&pr.ok,t=TIPOS[r.tipo],cap=t?.capa||7,vig=r.desde||r.hasta?`${fFecha(r.desde)||'…'} a ${fFecha(r.hasta)||'…'}`:'Permanente',alc=resumenAlcance(r.alcance);
   const est=estadoRegla(r);return `<article class="rc${['Inactiva','Vencida'].includes(est[0])?' off':''}"><div class="rc-top"><span class="rc-ic" style="--cc:var(--c${cap})">${ic(TICON[r.tipo]||'reglas')}</span>
@@ -1715,17 +1713,17 @@ function campoHTML(c,v){const k=c.key;
     case 'skus':return grupoChk(k,esc(c.label),optsProd(),v||[],'Ninguno');
     case 'precios':return `<fieldset><legend>${esc(c.label)}</legend><table class="t"><tbody>${PRODUCTOS.map(p=>`<tr><td>${esc(p.nombre)}</td><td style="width:140px"><input type="number" step="0.01" data-k="${k}" data-sku="${p.sku}" value="${v?.[p.sku]??''}" class="num" placeholder="No aplica" aria-label="${esc(p.nombre)}"></td></tr>`).join('')}</tbody></table></fieldset>`;
     case 'pisotecho':return `<fieldset><legend>${esc(c.label)}</legend><table class="t"><thead><tr><th>Producto</th><th>Piso</th><th>Techo</th></tr></thead><tbody>${PRODUCTOS.map(p=>`<tr><td>${esc(p.nombre)}</td><td><input type="number" step="0.01" data-k="${k}" data-sku="${p.sku}" data-f="piso" value="${v?.[p.sku]?.piso??''}" class="num" aria-label="Piso"></td><td><input type="number" step="0.01" data-k="${k}" data-sku="${p.sku}" data-f="techo" value="${v?.[p.sku]?.techo??''}" class="num" aria-label="Techo"></td></tr>`).join('')}</tbody></table></fieldset>`;
-    case 'componentes':{const rows=v&&v.length?v:[{sku:PRODUCTOS[0].sku,cant:1}];return `<fieldset><legend>${esc(c.label)}: producto y cantidad por pack</legend><div class="rows" data-rows="${k}">${rows.map(filaComp).join('')}</div><button type="button" class="btn link" data-add="comp">Agregar componente</button></fieldset>`}
+    case 'componentes':{const rows=v&&v.length?v:[{sku:(PRODUCTOS[0]?.sku||''),cant:1}];return `<fieldset><legend>${esc(c.label)}: producto y cantidad por pack</legend><div class="rows" data-rows="${k}">${rows.map(filaComp).join('')}</div><button type="button" class="btn link" data-add="comp">Agregar componente</button></fieldset>`}
     case 'escalaProductos':{const ag=state.dlg?.escAg??'sku',pz=!!state.dlg?.escPz,cols=pz?CLASES_ZONA:null;
       const items=[{key:'*',nombre:'Todos los productos del alcance (misma escala)',nota:'volumen en jabas; precio por jaba',paso:0.5,uv:'jaba'}];
-      if(ag==='sku')PRODUCTOS.filter(p=>tipoEditable(p.tipo)||!puede()).forEach(p=>items.push({key:p.sku,nombre:p.nombre,nota:esJaba(p)?(eqJ(p)===1?`volumen y precio por ${p.unidad}`:`volumen en jabas (1 ${p.unidad} = ${fq(eqJ(p))} jabas), precio por ${p.unidad}`):`volumen y precio por ${p.unidad}`,paso:pasoMed(p),uv:p.unidad}));
+      if(ag==='sku')PRODUCTOS.filter(p=>tipoEditable(p.tipo)||!puede()).forEach(p=>items.push({key:p.sku,nombre:p.nombre,nota:esJaba(p)?(eqJ(p)===1?`volumen y precio por ${p.unidad}`:`volumen en jabas (1 ${p.unidad} = ${fq(eqJ(p))} jabas), precio por ${p.unidad}`):porPeso(p)?`volumen en ${p.unidad}es, precio por kg`:`volumen y precio por ${p.unidad}`,paso:pasoMed(p),uv:p.unidad}));
       else{const keys=ag==='cat'?TIPOS_PROD.flatMap(t=>(CAT[t]||[]).map(c=>'cat:'+t+'/'+c)):(ATRIBUTOS.find(a=>'at:'+a.id===ag)?.valores||[]).map(v=>ag+'='+v);
-        keys.forEach(kk=>{const ps=PRODUCTOS.filter(p=>p.activo&&grpKey(p,ag)===kk);if(ps.length&&ps.some(p=>!tipoEditable(p.tipo)))return;if(!ps.length&&kk.startsWith('cat:')&&!tipoEditable(kk.slice(4).split('/')[0]))return;items.push({key:kk,nombre:grpLabel(kk),nota:ps.length?`${ps.length} SKU: ${ps.map(p=>p.nombre).join(', ')}. Volumen en jabas, precio por jaba`:'sin SKU activos',paso:ps.some(p=>!esJaba(p))?1:0.5,uv:'jaba'})})}
+        keys.forEach(kk=>{const ps=PRODUCTOS.filter(p=>p.activo&&grpKey(p,ag)===kk);if(ps.length&&ps.some(p=>!tipoEditable(p.tipo)))return;if(!ps.length&&kk.startsWith('cat:')&&!tipoEditable(kk.slice(4).split('/')[0]))return;items.push({key:kk,nombre:grpLabel(kk),nota:ps.length?`${ps.length} SKU: ${ps.map(p=>p.nombre).join(', ')}. ${ps.every(esJaba)?'Volumen en jabas, precio por jaba':ps.some(porPeso)?`Volumen en ${ps[0].unidad}es, precio por kg`:`Volumen en ${ps[0].unidad}s, precio por ${ps[0].unidad}`}`:'sin SKU activos',paso:ps.some(p=>!esJaba(p))?1:0.5,uv:'jaba'})})}
       const um=$('#dlg-b [data-k="modo"]')?.value||state.dlg?.escModo||'descuento',uLbl=um==='precio'?'S/':um==='descuento_pct'?'%':'pts';
       const hd=`<span>Desde (jabas)</span><span>Hasta</span>${cols?cols.map(c=>`<span>${c} (${uLbl})</span>`).join(''):`<span>${um==='precio'?'Precio (S/)':um==='descuento_pct'?'Descuento (%)':'Descuento (pts)'}</span>`}<span></span>`;
       return `<div data-campo="${k}"><fieldset><legend>${esc(c.label)}</legend><p class="hint" style="margin:0 0 8px">${ag==='sku'?'Marca los productos':'Marca los grupos'} y define sus bandas; también puedes pegar un bloque copiado de Excel (desde, hasta y precios) en la primera celda. El volumen se mide en jabas, desde media jaba (0,5). Al escribir el "hasta", la siguiente banda empieza en la cantidad que sigue; deja vacío el último para "o más".${ag!=='sku'?' En grupos, el valor es por jaba y se convierte a cada presentación.':''}${pz?' Los valores de casco y periferia se aplican según el tipo de zona del cliente.':''}</p>
        ${items.map(it=>{const bs=v?.[it.key]||[],on=bs.length>0;return `<div class="ep" data-ep="${k}" data-sku="${esc(it.key)}"><label class="chk"><input type="checkbox" data-ep-on${on?' checked':''}><strong>${esc(it.nombre)}</strong> <span class="nota">${esc(it.nota)}</span></label>
-        <div class="ep-b"${on?'':' hidden'}><div class="ep-h${cols?' w5':''}">${hd}</div><div class="rows" data-paso="${it.paso}" data-cols="${cols?cols.join(','):''}">${(on?bs:[{desde:it.paso}]).map(b=>filaBanda(b,it.paso,cols)).join('')}</div><button type="button" class="btn link" data-add="banda">Agregar banda</button></div></div>`}).join('')}</fieldset></div>`}
+        <div class="ep-b"${on?'':' hidden'}><div class="ep-h${cols?' w5':''}">${it.paso===0.5?hd:hd.replace('Desde (jabas)','Desde (unidades)')}</div><div class="rows" data-paso="${it.paso}" data-cols="${cols?cols.join(','):''}">${(on?bs:[{desde:it.paso}]).map(b=>filaBanda(b,it.paso,cols)).join('')}</div><button type="button" class="btn link" data-add="banda">Agregar banda</button></div></div>`}).join('')}</fieldset></div>`}
   }return ''}
 function leerCampo(c,root){const k=c.key,q=s=>root.querySelector(s),qa=s=>[...root.querySelectorAll(s)];
   switch(c.tipo){
@@ -1749,7 +1747,7 @@ function abrirRegla(id,tipoIni,fuente){
   const sel=r?.tipo||tipoIni;
   const tiposOpt=CAPAS.map(c=>{const ts=Object.values(TIPOS).filter(t=>t.capa===c.id);return ts.length?`<optgroup label="${c.id}. ${esc(c.nombre)}">${ts.map(t=>`<option value="${t.id}"${sel===t.id?' selected':''}>${esc(t.nombre)}</option>`).join('')}</optgroup>`:''}).join('');
   const a=r?.alcance||{};
-  const nuevo=!r,tipoTarjetas=CAPAS.map(c=>{const ts=Object.values(TIPOS).filter(t=>t.capa===c.id&&!t.oculto&&t.capa!==1).sort((x,y)=>(x.id==='lista'?-1:0)-(y.id==='lista'?-1:0));return ts.length?`<div class="tt-capa"><p class="tt-h">${capaTag(c.id)}${esc(c.nombre)}</p><div class="tt-grid">${ts.map(t=>t.id==='lista'?`<button type="button" class="tt tt-ext" data-lista-nueva><span class="rc-ic" style="--cc:var(--c${c.id})">${ic('listas')}</span><span class="tt-tx"><b>Lista de precios</b><span>Precio base por producto, con versiones, índice y bandas.</span><span class="tt-ir">Se crea en Listas de precios ›</span></span></button>`:`<button type="button" class="tt${sel===t.id?' on':''}" data-tipo="${t.id}"><span class="rc-ic" style="--cc:var(--c${c.id})">${ic(TICON[t.id]||'reglas')}</span><span class="tt-tx"><b>${esc(t.nombre)}</b><span>${esc(TDESC_CORTA[t.id]||t.descripcion||'')}</span></span></button>`).join('')}</div></div>`:''}).join('');
+  const nuevo=!r,tipoTarjetas=CAPAS.map(c=>{const ts=Object.values(TIPOS).filter(t=>t.capa===c.id&&!t.oculto&&t.capa!==1).sort((x,y)=>(x.id==='lista'?-1:0)-(y.id==='lista'?-1:0));return ts.length?`<div class="tt-capa"><p class="tt-h">${capaTag(c.id)}${esc(c.nombre)}</p><div class="tt-grid">${ts.map(t=>t.id==='lista'?`<button type="button" class="tt tt-ext" data-lista-nueva><span class="rc-ic" style="--cc:var(--c${c.id})">${ic('listas')}</span><span class="tt-tx"><b>Lista de precios</b><span>Precio base por producto, con versiones, variación del día y bandas.</span><span class="tt-ir">Se crea en Listas de precios ›</span></span></button>`:`<button type="button" class="tt${sel===t.id?' on':''}" data-tipo="${t.id}"><span class="rc-ic" style="--cc:var(--c${c.id})">${ic(TICON[t.id]||'reglas')}</span><span class="tt-tx"><b>${esc(t.nombre)}</b><span>${esc(TDESC_CORTA[t.id]||t.descripcion||'')}</span></span></button>`).join('')}</div></div>`:''}).join('');
   $('#dlg-b').innerHTML=`<p class="banner err" id="frm-err" hidden></p>
     <div id="f-paso1"${nuevo&&!sel?'':' hidden'}><p class="paso-h"><b>¿Qué quieres crear?</b><span class="nota">Elige una opción; después te pedimos solo lo necesario.</span></p>${tipoTarjetas}</div>
     ${puede()&&!sinRestriccion()?`<p class="banner info">${ic('candado')} <b>Tu permiso:</b> ${esc(txtPermiso())}. La regla debe quedar dentro de ese alcance.</p>`:''}
@@ -1843,7 +1841,7 @@ function guardarDialogo(){
 $('#frm').addEventListener('submit',e=>{e.preventDefault();if(guardarDialogo()){guardar();$('#dlg').close();render()}});
 $('#dlg').addEventListener('click',e=>{
   if(e.target.closest('[data-cerrar]')){$('#dlg').close();return}
-  const add=e.target.closest('[data-add]');if(add){add.previousElementSibling.insertAdjacentHTML('beforeend',add.dataset.add==='banda'?filaBanda({},num(add.previousElementSibling.dataset.paso)||1,add.previousElementSibling.dataset.cols?add.previousElementSibling.dataset.cols.split(','):null):filaComp({sku:PRODUCTOS[0].sku,cant:1}));recalcTodo();return}
+  const add=e.target.closest('[data-add]');if(add){add.previousElementSibling.insertAdjacentHTML('beforeend',add.dataset.add==='banda'?filaBanda({},num(add.previousElementSibling.dataset.paso)||1,add.previousElementSibling.dataset.cols?add.previousElementSibling.dataset.cols.split(','):null):filaComp({sku:(PRODUCTOS[0]?.sku||''),cant:1}));recalcTodo();return}
   const rm=e.target.closest('[data-rmrow]');if(rm){rm.closest('.r').remove();recalcTodo()}});
 $('#dlg').addEventListener('paste',e=>{const inp=e.target.closest('.ep .rows input');if(!inp)return;const txt=e.clipboardData.getData('text');if(!/[\t\n]/.test(txt))return;e.preventDefault();
   const box=inp.closest('.rows'),paso=num(box.dataset.paso)||1,cols=box.dataset.cols?box.dataset.cols.split(','):null;let rows=[...box.querySelectorAll('.r.bb')],ri=rows.indexOf(inp.closest('.r'));
@@ -2111,7 +2109,7 @@ function renderAudTabla(){const {ver,pie}=paginar('auditoria',filtrarAuditoria()
 /* ================= Eventos ================= */
 const ACC={
   'ir':a=>ir(a.dataset.v),
-  'sim-add':()=>{state.sim.lineas.push({sku:activos().find(p=>veTipo(p.tipo))?.sku,cant:1,rebaja:0});renderSimLineas();renderSimRes()},
+  'sim-add':()=>{const p0=activos().find(p=>veTipo(p.tipo));if(!p0)return toast('No hay productos activos.');state.sim.lineas.push({sku:p0.sku,cant:1,rebaja:0});renderSimLineas();renderSimRes()},
   'sim-rm':a=>{state.sim.lineas.splice(+a.dataset.i,1);renderSimLineas();renderSimRes()},
   'ver-lista':a=>{state.listaSel=a.dataset.id;state.vista==='listas'?renderListas():ir('listas')},
   'nueva-version':a=>abrirVersion(a.dataset.id),
@@ -2152,7 +2150,7 @@ const ACC={
   'ver-ocultas':()=>{state.rf.est='todas';renderReglas()},
   'ejemplos':()=>{const ex=seed().filter(r=>r.tipo!=='lista'&&!state.reglas.some(x=>x.id===r.id));if(!ex.length)return toast('Los ejemplos ya están cargados.');state.reglas.push(...ex);audit('Cargó promociones de ejemplo',`${ex.length} reglas de demostración.`);render();toast(`${ex.length} promociones de ejemplo cargadas`)},
   'quitar-ejemplos':()=>{const ids=new Set(seed().filter(r=>r.tipo!=='lista').map(r=>r.id));const n=state.reglas.filter(r=>ids.has(r.id)).length;if(!n)return;if(!confirm(`¿Quitar las ${n} promociones de ejemplo? Las que creaste tú se mantienen.`))return;state.reglas=state.reglas.filter(r=>!ids.has(r.id));audit('Quitó promociones de ejemplo',`${n} reglas.`);render();toast('Ejemplos quitados')},
-  'reset':()=>{if(confirm('¿Volver al estado inicial? Quedan solo las listas de precios de ejemplo, sin promociones. Se pierden los cambios.')){state.reglas=seedLimpio();state.auditoria=seedAudit();setProductos(seedProductos());setCatalogo(seedCatalogo());setFactores(seedFactores());setEstructura(seedEstructura());setClientes(seedClientes());CONFIG.huevosPorJaba=180;CONFIG.kgJaba=11;state.carga=null;guardar();render();toast('Datos de ejemplo restablecidos')}},
+  'reset':()=>{if(confirm('¿Borrar todo y volver al estado inicial? Se eliminan listas, precios, promociones, productos y clientes. Esta acción no se puede deshacer.')){state.reglas=seedLimpio();state.auditoria=[];setProductos([]);setCatalogo(seedCatalogo());setFactores([]);setEstructura(seedEstructura());setClientes([]);CONFIG.huevosPorJaba=180;CONFIG.kgJaba=11;state.carga=null;guardar();render();toast('Datos borrados: el motor quedó vacío')}},
   'tipo-demo':()=>{motor.registrarTipo(TIPO_DEMO);try{localStorage.setItem(K_DEMO,'1')}catch(e){}audit('Registró un tipo de regla','Descuento por pago al contado (capa 4).');render();toast('Tipo registrado. Ya puedes crear reglas con él.')},
   'plantilla':()=>descargarPlantilla(),
   'carga-paso':a=>{state.carga={...(state.carga||{}),paso:+a.dataset.p,errorArchivo:undefined};render()},
@@ -2187,3 +2185,5 @@ cargar();state.usuario=state.usuario||'U1';state.rol=puede()?'analista':'jefe';p
 </script>
 </body>
 </html>
+
+</body></html>
